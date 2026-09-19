@@ -1,4 +1,10 @@
-const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? "https://example.com/v1";
+const PUBLIC_API_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? "https://example.com/v1";
+
+// سمت سرور (SSR داخل کانتینر) باید از آدرس داخلی شبکه‌ی داکر بره، نه localhost
+const BASE_URL =
+  typeof window === "undefined"
+    ? process.env.INTERNAL_API_BASE_URL ?? PUBLIC_API_URL
+    : PUBLIC_API_URL;
 
 export class ApiError extends Error {
   status: number;
@@ -66,7 +72,7 @@ async function rawPost<TResponse>(
   return data as TResponse;
 }
 
-const REFRESH_PATH = "/account/jwt/refresh/";
+const REFRESH_PATH = "/api/account/jwt/refresh/";
 
 interface RefreshResponse {
   access: string;

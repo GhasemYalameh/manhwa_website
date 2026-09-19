@@ -1,6 +1,6 @@
 import { apiGet, apiPost } from "./client";
 
-const SUBSCRIPTION_PREFIX = "/subscription";
+const SUBSCRIPTION_PREFIX = "/api/subscription";
 
 export interface SubscriptionStatus {
   is_subscriber: boolean;

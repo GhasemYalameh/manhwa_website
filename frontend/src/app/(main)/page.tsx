@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { HeroBanner } from "@/components/home/HeroBanner";
 import { LatestUpdatesSection } from "@/components/home/LatestUpdatesSection";
 import { TopThisWeekSection } from "@/components/home/TopThisWeekSection";

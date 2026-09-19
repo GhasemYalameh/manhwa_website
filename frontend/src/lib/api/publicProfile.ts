@@ -1,7 +1,7 @@
 import { apiGet } from "./client";
 import type { MyCommentManhwaRef } from "./comment";
 
-const PUBLIC_PROFILE_PREFIX = "/account/profile";
+const PUBLIC_PROFILE_PREFIX = "/api/account/profile";
 
 export interface PublicProfileComment {
   id: number;

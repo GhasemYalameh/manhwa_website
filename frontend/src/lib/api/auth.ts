@@ -1,6 +1,6 @@
 import { apiPost, apiGet, apiPatchForm, getRefreshToken } from "./client";
 
-const AUTH_PREFIX = "/account";
+const AUTH_PREFIX = "/api/account";
 
 export interface VerifyOtpResponse {
   refresh_token: string;
