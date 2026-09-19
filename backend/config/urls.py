@@ -23,8 +23,8 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include('manhwas.urls')),
     path('api/', include('notifications.urls')),
-    path('account/', include('accounts.urls')),
-    path('subscription/', include('subscription.urls')),
+    path('api/account/', include('accounts.urls')),
+    path('api/subscription/', include('subscription.urls')),
 
     path("ckeditor5/", include('django_ckeditor_5.urls')),  # ckeditor url
 

@@ -5,9 +5,8 @@ import os
 SECRET_KEY = os.getenv('SECRET_KEY')
 
 ALLOWED_HOSTS = [
-    'localhost',
-
-    '127.0.0.1',    '0.0.0.0',
+    'localhost', 'web',
+    '127.0.0.1', '0.0.0.0',
 ]
 
 # SECURITY WARNING: don't run with debug turned on in production!
