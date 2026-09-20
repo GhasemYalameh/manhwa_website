@@ -1,12 +1,12 @@
 x-django-config: &django-app
   image: local/manhwa_web:dev
-  build: ./backend
+  build: 
+    context: ./backend
+    dockerfile: Dockerfile
   env_file:
-    - .env
-  environment:
-  - STAGE=production
+    - ./.env
   volumes:
-    - .:/code
+    - ./backend:/code
   depends_on:
     redis:
       condition: service_healthy
@@ -66,7 +66,7 @@ services:
     expose:
       - "8000"
     volumes:
-      - .:/code
+      - ./backend:/code
       - static_volume:/code/staticfiles
       - media_volume:/code/media
       - protected_media:/code/protected
@@ -81,7 +81,7 @@ services:
     <<: *django-app
     command: celery -A config worker --loglevel=info
     volumes:
-      - .:/code
+      - ./backend:/code
       - media_volume:/code/media
       - protected_media:/code/protected
 
@@ -97,6 +97,8 @@ services:
         NEXT_PUBLIC_MEDIA_BASE_URL: http://localhost
     environment:
       INTERNAL_API_BASE_URL: http://web:8000
+      NEXT_PUBLIC_API_BASE_URL: http://localhost
+      NEXT_PUBLIC_MEDIA_BASE_URL: http://localhost
     expose:
       - "3000"
     depends_on:
