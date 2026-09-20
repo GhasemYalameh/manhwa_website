@@ -1,4 +1,4 @@
-const PUBLIC_API_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? "https://example.com/v1";
+const PUBLIC_API_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? "https://localhost";
 
 // سمت سرور (SSR داخل کانتینر) باید از آدرس داخلی شبکه‌ی داکر بره، نه localhost
 const BASE_URL =

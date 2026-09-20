@@ -1,12 +1,18 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { ApiError } from "@/lib/api/client";
 import { verifySubscriptionPayment } from "@/lib/api/subscription";
 
-type ResultState = "checking" | "success" | "failed" | "not_found" | "already_used" | "error";
+type ResultState =
+  | "checking"
+  | "success"
+  | "failed"
+  | "not_found"
+  | "already_used"
+  | "error";
 
 function getMessage(state: ResultState): string {
   switch (state) {
@@ -23,7 +29,7 @@ function getMessage(state: ResultState): string {
   }
 }
 
-export default function SubscriptionCallbackPage() {
+function SubscriptionCallbackContent() {
   const searchParams = useSearchParams();
   const [state, setState] = useState<ResultState>("checking");
 
@@ -44,6 +50,7 @@ export default function SubscriptionCallbackPage() {
           if (err.status === 404) return setState("not_found");
           if (err.status === 226) return setState("already_used");
         }
+
         setState("error");
       });
   }, [searchParams]);
@@ -54,12 +61,18 @@ export default function SubscriptionCallbackPage() {
   return (
     <main className="flex min-h-screen flex-col items-center justify-center gap-4 bg-bg px-4 text-center">
       {isChecking ? (
-        <p className="text-sm text-text-secondary">در حال بررسی نتیجه‌ی پرداخت...</p>
+        <p className="text-sm text-text-secondary">
+          در حال بررسی نتیجه‌ی پرداخت...
+        </p>
       ) : (
         <>
-          <p className={`text-base font-semibold ${isSuccess ? "text-success" : "text-error"}`}>
+          <p
+            className={`text-base font-semibold ${isSuccess ? "text-success" : "text-error"
+              }`}
+          >
             {getMessage(state)}
           </p>
+
           <Link
             href="/profile"
             className="rounded-card bg-accent px-5 py-2.5 text-sm font-semibold text-white hover:bg-accent-dark"
@@ -69,5 +82,21 @@ export default function SubscriptionCallbackPage() {
         </>
       )}
     </main>
+  );
+}
+
+export default function SubscriptionCallbackPage() {
+  return (
+    <Suspense
+      fallback={
+        <main className="flex min-h-screen items-center justify-center bg-bg px-4 text-center">
+          <p className="text-sm text-text-secondary">
+            در حال بررسی نتیجه‌ی پرداخت...
+          </p>
+        </main>
+      }
+    >
+      <SubscriptionCallbackContent />
+    </Suspense>
   );
 }

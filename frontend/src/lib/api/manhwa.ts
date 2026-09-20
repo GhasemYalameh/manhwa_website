@@ -52,7 +52,7 @@ export function getManhwas(
 
 
 export function getCoverUrl(cover: string): string {
-  return `${BASE_MEDIA_URL}/${cover}`;
+  return `${BASE_MEDIA_URL}${cover}`;
 }
 
 export interface StudioRef {
