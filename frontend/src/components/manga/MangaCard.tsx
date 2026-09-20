@@ -79,11 +79,11 @@ export function MangaCard({
         <div className="mt-1.5 flex items-center gap-3 text-xs text-text-secondary">
           <span className="flex items-center gap-1">
             <EyeIcon className="h-3.5 w-3.5" />
-            {viewsCount.toLocaleString("fa-IR")}
+            {(viewsCount ?? 0).toLocaleString("fa-IR")}
           </span>
           <span className="flex items-center gap-1">
             <CommentIcon className="h-3.5 w-3.5" />
-            {commentsCount.toLocaleString("fa-IR")}
+            {(commentsCount ?? 0).toLocaleString("fa-IR")}
           </span>
         </div>
       </div>
