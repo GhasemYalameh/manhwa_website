@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { MangaCard } from "@/components/manga/MangaCard";
 import { useToast } from "@/components/ui/Toast";
+import { MangaCardGrid } from "@/components/manga/MangaCardGrid";
 import {
   getWatchList,
   updateWatchlistStatus,
@@ -87,7 +88,7 @@ export function WatchlistSection() {
       ) : filtered.length === 0 ? (
         <p className="mt-6 text-sm text-text-secondary">موردی در این بخش وجود ندارد.</p>
       ) : (
-        <div className="mt-6 grid grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-4">
+        <MangaCardGrid>
           {filtered.map((item) => (
             <div key={item.id} className="flex flex-col gap-2">
               <MangaCard
@@ -123,7 +124,7 @@ export function WatchlistSection() {
               </div>
             </div>
           ))}
-        </div>
+        </MangaCardGrid>
       )}
     </section>
   );

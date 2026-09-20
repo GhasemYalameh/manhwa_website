@@ -4,6 +4,7 @@ import { BrowseFilters } from "@/components/manga/BrowseFilters";
 import { getManhwas, getCoverUrl } from "@/lib/api/manhwa";
 import { getGenres } from "@/lib/api/genre";
 import { getStudios } from "@/lib/api/studio";
+import { MangaCardGrid } from "@/components/manga/MangaCardGrid";
 
 interface BrowsePageProps {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
@@ -62,7 +63,7 @@ export default async function BrowsePage({ searchParams }: BrowsePageProps) {
         {manhwasRes.results.length === 0 ? (
           <p className="py-12 text-center text-sm text-text-secondary">موردی پیدا نشد.</p>
         ) : (
-          <div className="grid grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-4">
+          <MangaCardGrid>
             {manhwasRes.results.map((item) => (
               <MangaCard
                 key={item.slug}
@@ -77,7 +78,7 @@ export default async function BrowsePage({ searchParams }: BrowsePageProps) {
                 publicationStatus={item.publication_status}
               />
             ))}
-          </div>
+          </MangaCardGrid>
         )}
 
         {totalPages > 1 && (

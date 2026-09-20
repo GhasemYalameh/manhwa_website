@@ -1,6 +1,7 @@
 import { MangaCard } from "@/components/manga/MangaCard";
 import { getCoverUrl } from "@/lib/api/manhwa";
 import type { PublicProfileManhwaItem } from "@/lib/api/publicProfile";
+import { MangaCardGrid } from "@/components/manga/MangaCardGrid";
 
 interface PublicInterestedManhwasProps {
   items: PublicProfileManhwaItem[];
@@ -12,7 +13,7 @@ export function PublicInterestedManhwas({ items }: PublicInterestedManhwasProps)
   return (
     <section className="mx-auto max-w-[1400px] px-4 py-8 lg:px-8">
       <h2 className="mb-4 text-lg font-bold text-text-primary">مورد علاقه (امتیاز ۴ و ۵)</h2>
-      <div className="grid grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-4">
+      <MangaCardGrid>
         {items.map((item) => (
           <MangaCard
             key={item.slug}
@@ -26,7 +27,7 @@ export function PublicInterestedManhwas({ items }: PublicInterestedManhwasProps)
             publicationStatus={item.publication_status}
           />
         ))}
-      </div>
+      </MangaCardGrid>
     </section>
   );
 }

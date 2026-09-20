@@ -97,7 +97,7 @@ export function Header() {
 
   return (
     <header className="sticky top-0 z-40 border-b border-divider bg-surface">
-      <div className="mx-auto flex h-16 max-w-[1400px] items-center justify-between gap-4 px-4 lg:px-8">
+      <div className="mx-auto flex h-20 max-w-[1400px] items-center justify-between gap-4 px-4 lg:px-8">
         <Link href="/" className="flex shrink-0 items-center gap-2 ">
           <span className="text-2xl font-bold text-accent">نارنج‌تون</span>
         </Link>
@@ -130,7 +130,7 @@ export function Header() {
           )}
 
           {!hasCheckedAuth ? (
-            <div className="h-9 w-24 animate-pulse rounded-card bg-divider/50" />
+            <div className="h-11 w-28 animate-pulse rounded-card bg-divider/50" />
           ) : isLoggedIn ? (
             <div ref={userMenuRef} className="relative">
               <button
@@ -142,9 +142,9 @@ export function Header() {
                 <span className="text-sm text-text-primary">{profile?.first_name ?? ""}</span>
                 {profile?.avatar ? (
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img src={getCoverUrl(profile.avatar)} alt="" className="h-10 w-10 rounded-full object-cover" />
+                  <img src={getCoverUrl(profile.avatar)} alt="" className="h-12 w-12 rounded-full object-cover" />
                 ) : (
-                  <span className="flex h-8 w-8 items-center justify-center rounded-full bg-accent-light text-sm font-semibold text-accent">
+                  <span className="flex h-12 w-12 items-center justify-center rounded-full bg-accent-light text-base font-semibold text-accent">
                     {profile?.first_name?.charAt(0) ?? "?"}
                   </span>
                 )}

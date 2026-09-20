@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { MangaCard } from "@/components/manga/MangaCard";
 import { getManhwas, getCoverUrl, type ManhwaApiItem } from "@/lib/api/manhwa";
 import type { GenreApiItem } from "@/lib/api/genre";
+import { MangaCardCarousel } from "@/components/manga/MangaCardCarousel";
 
 interface GenreTabsSectionProps {
   genres: GenreApiItem[];
@@ -59,30 +60,29 @@ export function GenreTabsSection({ genres }: GenreTabsSectionProps) {
         ))}
       </div>
 
-      <div
-        className={`mt-5 grid grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-4 transition-opacity duration-200 ${isLoading ? "opacity-50" : "opacity-100"
-          }`}
-      >
-        {!isLoading && items.length === 0 ? (
-          <p className="col-span-full py-8 text-center text-sm text-text-secondary">
-            موردی برای این ژانر پیدا نشد.
-          </p>
-        ) : (
-          items.map((item) => (
-            <MangaCard
-              key={item.slug}
-              slug={item.slug}
-              coverUrl={getCoverUrl(item.cover)}
-              title={item.fa_title || item.en_title}
-              rating={item.avg_rating ? Number(item.avg_rating) : undefined}
-              lastUpload={item.last_upload}
-              viewsCount={item.views_count}
-              commentsCount={item.comments_count}
-              isHot={item.is_hot}
-              publicationStatus={item.publication_status}
-            />
-          ))
-        )}
+      <div className={`mt-5 transition-opacity duration-200 ${isLoading ? "opacity-50" : "opacity-100"}`}>
+        <MangaCardCarousel>
+          {!isLoading && items.length === 0 ? (
+            <p className="col-span-full py-8 text-center text-sm text-text-secondary">
+              موردی برای این ژانر پیدا نشد.
+            </p>
+          ) : (
+            items.map((item) => (
+              <MangaCard
+                key={item.slug}
+                slug={item.slug}
+                coverUrl={getCoverUrl(item.cover)}
+                title={item.fa_title || item.en_title}
+                rating={item.avg_rating ? Number(item.avg_rating) : undefined}
+                lastUpload={item.last_upload}
+                viewsCount={item.views_count}
+                commentsCount={item.comments_count}
+                isHot={item.is_hot}
+                publicationStatus={item.publication_status}
+              />
+            ))
+          )}
+        </MangaCardCarousel>
       </div>
     </section>
   );

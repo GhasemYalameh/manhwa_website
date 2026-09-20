@@ -1,5 +1,6 @@
 import { MangaCard } from "@/components/manga/MangaCard";
 import { getCoverUrl, type ManhwaApiItem } from "@/lib/api/manhwa";
+import { MangaCardCarousel } from "@/components/manga/MangaCardCarousel";
 
 interface LatestUpdatesSectionProps {
   items: ManhwaApiItem[];
@@ -12,7 +13,7 @@ export function LatestUpdatesSection({ items, title = "آخرین به‌روز�
       <div className="mb-4 flex items-center justify-between">
         <h2 className="text-lg font-bold text-text-primary">{title}</h2>
       </div>
-      <div className="grid grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-4">
+      <MangaCardCarousel>
         {items.map((item) => (
           <MangaCard
             key={item.slug}
@@ -27,7 +28,7 @@ export function LatestUpdatesSection({ items, title = "آخرین به‌روز�
             publicationStatus={item.publication_status}
           />
         ))}
-      </div>
+      </MangaCardCarousel>
     </section>
   );
 }

@@ -39,6 +39,7 @@ export function MangaCard({
         <img
           src={coverUrl}
           alt={title}
+          draggable={false}
           className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105 backdrop-blur-lg"
         />
         <div className="pointer-events-none absolute inset-x-0 top-0  rounded-t-card h-16 bg-gradient-to-b from-black/80 to-transparent" />
