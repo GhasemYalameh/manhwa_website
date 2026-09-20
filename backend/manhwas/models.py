@@ -73,6 +73,7 @@ class Manhwa(models.Model):
     # age_limit
 
     class Meta:
+        ordering = ('-datetime_created',)
         indexes = (
             models.Index(fields=['studio', 'day_of_week']),
             models.Index(fields=['day_of_week']),
@@ -128,6 +129,7 @@ class Rate(models.Model):
     rating = models.PositiveSmallIntegerField(choices=RATING_CHOICES, verbose_name=_('rating'))
 
     class Meta:
+        ordering = ('manhwa', 'rating',)
         unique_together = ('user', 'manhwa')
         indexes = (
             models.Index(fields=('manhwa', 'rating',)),
@@ -148,7 +150,7 @@ class Chapter(models.Model):
 
     class Meta:
         unique_together = ('number', 'manhwa')
-        ordering = ('number',)
+        ordering = ('manhwa', 'number',)
         indexes = (
             models.Index(fields=['manhwa', 'number']),
             models.Index(fields=['-downloads_count']),
@@ -191,7 +193,7 @@ class ChapterImage(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        ordering = ('order',)
+        ordering = ('chapter', 'order',)
         indexes = (
             models.Index(fields=('chapter', )),
         )
@@ -340,6 +342,7 @@ class CommentReAction(models.Model):
     objects = CommentReactionManager()
 
     class Meta:
+        ordering = ('comment',)
         unique_together = ('user', 'comment')
         indexes = (
             models.Index(fields=('comment', 'reaction')),
@@ -406,6 +409,7 @@ class WatchList(models.Model):
     watching_status = models.CharField(choices=WATCHING_STATUS, max_length=10, default=WILL_READING, blank=True)
 
     class Meta:
+        ordering = ('user',)
         unique_together = ('user', 'manhwa')
         indexes = (
             models.Index(fields=('user', 'watching_status')),
