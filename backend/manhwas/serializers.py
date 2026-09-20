@@ -132,14 +132,15 @@ class RatingDetailSerializer(serializers.Serializer):
 
 class ManhwaSerializer(serializers.ModelSerializer):
     comments_count = serializers.IntegerField( read_only=True)
+    chapters_count = serializers.IntegerField( read_only=True)
     cover = serializers.URLField(source='cover.url', read_only=True)
     avg_rating = serializers.DecimalField(max_digits=3, decimal_places=1, read_only=True)
     slug = serializers.CharField(source='title_slug', read_only=True)
 
     class Meta:
         model = Manhwa
-        fields = ('slug', 'fa_title', 'en_title', 'is_hot', 'avg_rating', 'season', 'day_of_week', 'publication_status', 'last_upload', 'last_upload_time', 'views_count', 'comments_count', 'cover', 'hero_cover')  # + 'comments'
-        read_only_fields = ('comments_count', 'cover', 'avg_rating', 'slug', 'fa_title',)
+        fields = ('slug', 'fa_title', 'en_title', 'is_hot', 'avg_rating', 'season', 'day_of_week', 'publication_status', 'last_upload', 'last_upload_time', 'views_count', 'comments_count', 'chapters_count', 'cover', 'hero_cover')  # + 'comments'
+        read_only_fields = ('comments_count', 'chapters_count', 'cover', 'avg_rating', 'slug', 'fa_title',)
 
 
 class ManhwaDetailSerializer(serializers.ModelSerializer):

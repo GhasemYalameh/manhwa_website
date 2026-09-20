@@ -24,6 +24,10 @@ comment_count_sq = (
     Comment.objects.filter(manhwa_id=OuterRef('pk'), level=0).order_by().values('manhwa')
     .annotate(count=Count('id')).values('count')
 )
+chapter_count_sq = (
+    Chapter.objects.filter(manhwa_id=OuterRef('pk')).order_by().values('manhwa')
+    .annotate(count=Count('id')).values('count')
+)
 avg_rating_sq = (
     Rate.objects.filter(manhwa_id=OuterRef('pk')).order_by().values('manhwa')
     .annotate(avg=Avg('rating')).values('avg')
@@ -195,6 +199,7 @@ class ManhwaViewSet(ReadOnlyModelViewSet):
         if self.action == 'list':
             return base_query.annotate(
                 comments_count=Coalesce(Subquery(comment_count_sq), Value(0)),
+                chapters_count=Coalesce(Subquery(chapter_count_sq), Value(0)),
                 avg_rating=Coalesce(Subquery(avg_rating_sq), Value(0.0)),
             )
         return base_query
@@ -218,6 +223,7 @@ class ManhwaViewSet(ReadOnlyModelViewSet):
             day_of_week=today_name,
             ).annotate(
                 comments_count=Coalesce(Subquery(comment_count_sq), Value(0)),
+                chapters_count=Coalesce(Subquery(chapter_count_sq), Value(0)),
                 avg_rating=Coalesce(Subquery(avg_rating_sq), Value(0.0)),
             )
         serializer = self.get_serializer(manhwas, many=True)
