@@ -5,6 +5,7 @@ import { MangaCard } from "@/components/manga/MangaCard";
 import { getAccessToken } from "@/lib/api/client";
 import { getWatchList } from "@/lib/api/watchlist";
 import { getCoverUrl, type ManhwaApiItem } from "@/lib/api/manhwa";
+import { MangaCardCarousel } from "@/components/manga/MangaCardCarousel";
 
 const MAX_ITEMS = 6;
 
@@ -47,7 +48,7 @@ export function ContinueReadingSection() {
       <div className="mb-4 flex items-center justify-between">
         <h2 className="text-lg font-bold text-text-primary">ادامه مطالعه</h2>
       </div>
-      <div className="grid grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-4">
+      <MangaCardCarousel>
         {items.map((item) => (
           <MangaCard
             key={item.slug}
@@ -55,14 +56,14 @@ export function ContinueReadingSection() {
             coverUrl={getCoverUrl(item.cover)}
             title={item.fa_title || item.en_title}
             rating={item.avg_rating ? Number(item.avg_rating) : undefined}
-            lastUpload={item.last_upload}
+            chaptersCount={item.chapters_count}
             viewsCount={item.views_count}
             commentsCount={item.comments_count}
             isHot={item.is_hot}
             publicationStatus={item.publication_status}
           />
         ))}
-      </div>
+      </MangaCardCarousel >
     </section>
   );
 }

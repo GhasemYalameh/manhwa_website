@@ -31,9 +31,14 @@
 }
 
 html {
-  font-size: 118%;
+  font-size: 100%;
 }
 
+@media (min-width: 1024px) {
+  html {
+    font-size: 118%;
+  }
+}
 html,
 body {
   background: var(--color-bg);

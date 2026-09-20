@@ -10,6 +10,7 @@ import { getCoverUrl } from "@/lib/api/manhwa";
 import { getUnreadNotificationsCount } from "@/lib/api/notifications";
 import { SearchDropdown } from "@/components/layout/SearchDropdown";
 import { NotificationDropdown } from "@/components/layout/NotificationDropdown";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import {
   ChevronDownIcon,
   MenuIcon,
@@ -18,8 +19,8 @@ import {
   HeartIcon,
   LogOutIcon,
   CommentIcon,
+  SearchIcon,
 } from "@/components/icons";
-
 
 function isActiveLink(pathname: string, href: string): boolean {
   if (href === "/") return pathname === "/";
@@ -35,6 +36,7 @@ export function Header() {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [unreadCount, setUnreadCount] = useState(0);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
 
   const userMenuRef = useRef<HTMLDivElement>(null);
@@ -81,7 +83,18 @@ export function Header() {
 
   useEffect(() => {
     setMobileMenuOpen(false);
+    setSearchOpen(false);
   }, [pathname]);
+
+  function toggleMobileMenu() {
+    setMobileMenuOpen((v) => !v);
+    setSearchOpen(false);
+  }
+
+  function toggleSearch() {
+    setSearchOpen((v) => !v);
+    setMobileMenuOpen(false);
+  }
 
   async function handleLogout() {
     try {
@@ -97,9 +110,9 @@ export function Header() {
 
   return (
     <header className="sticky top-0 z-40 border-b border-divider bg-surface">
-      <div className="mx-auto flex h-20 max-w-[1400px] items-center justify-between gap-4 px-4 lg:px-8">
-        <Link href="/" className="flex shrink-0 items-center gap-2 ">
-          <span className="text-2xl font-bold text-accent">نارنج‌تون</span>
+      <div className="mx-auto flex h-14 max-w-[1400px] items-center justify-between gap-4 px-4 lg:h-20 lg:px-8">
+        <Link href="/" className="flex shrink-0 items-center gap-2">
+          <span className="text-xl font-bold text-accent lg:text-2xl">نارنج‌تون</span>
         </Link>
 
         <nav className="hidden items-center gap-6 lg:flex">
@@ -109,7 +122,7 @@ export function Header() {
               <Link
                 key={link.href}
                 href={link.href}
-                className={`border-b-2 pb-1 text-sm pb-0 font-medium transition-colors ${active
+                className={`border-b-2 pb-0 text-sm font-medium transition-colors ${active
                   ? "border-accent text-accent"
                   : "border-transparent text-text-secondary hover:text-text-primary"
                   }`}
@@ -124,7 +137,9 @@ export function Header() {
           <SearchDropdown variant="desktop" enableSlashShortcut />
         </div>
 
+        {/* دسکتاپ */}
         <div className="hidden items-center gap-3 lg:flex">
+          <ThemeToggle variant="icon" />
           {hasCheckedAuth && isLoggedIn && (
             <NotificationDropdown unreadCount={unreadCount} onUnreadCountChange={setUnreadCount} />
           )}
@@ -155,7 +170,7 @@ export function Header() {
                   <Link
                     href="/profile"
                     onClick={() => setUserMenuOpen(false)}
-                    className="flex items-center gap-2 px-4 py-2 text-sm text-text-primary  hover:text-accent"
+                    className="flex items-center gap-2 px-4 py-2 text-sm text-text-primary hover:text-accent"
                   >
                     <UserCircleIcon />
                     پروفایل من
@@ -163,7 +178,7 @@ export function Header() {
                   <Link
                     href="/favorites"
                     onClick={() => setUserMenuOpen(false)}
-                    className="flex items-center gap-2 px-4 py-2 text-sm text-text-primary  hover:text-accent"
+                    className="flex items-center gap-2 px-4 py-2 text-sm text-text-primary hover:text-accent"
                   >
                     <HeartIcon />
                     علاقه‌مندی‌ها
@@ -171,7 +186,7 @@ export function Header() {
                   <Link
                     href="/tickets"
                     onClick={() => setUserMenuOpen(false)}
-                    className="flex items-center gap-2 px-4 py-2 text-sm text-text-primary  hover:text-accent"
+                    className="flex items-center gap-2 px-4 py-2 text-sm text-text-primary hover:text-accent"
                   >
                     <CommentIcon />
                     تیکت‌های من
@@ -198,22 +213,43 @@ export function Header() {
           )}
         </div>
 
-        <button
-          type="button"
-          onClick={() => setMobileMenuOpen((v) => !v)}
-          aria-label="باز کردن منو"
-          className="rounded-card p-2 text-text-primary lg:hidden"
-        >
-          {mobileMenuOpen ? <XIcon /> : <MenuIcon />}
-        </button>
+        {/* موبایل: سرچ + اعلان + همبرگر */}
+        <div className="flex items-center gap-1 lg:hidden">
+          <button
+            type="button"
+            onClick={toggleSearch}
+            aria-label="جستجو"
+            className={`rounded-full p-2 transition-colors hover:bg-accent-light hover:text-accent ${searchOpen ? "text-accent" : "text-text-secondary"
+              }`}
+          >
+            <SearchIcon />
+          </button>
+
+          {hasCheckedAuth && isLoggedIn && (
+            <NotificationDropdown unreadCount={unreadCount} onUnreadCountChange={setUnreadCount} />
+          )}
+
+          <button
+            type="button"
+            onClick={toggleMobileMenu}
+            aria-label="باز کردن منو"
+            className="rounded-full p-2 text-text-primary"
+          >
+            {mobileMenuOpen ? <XIcon className="h-5 w-5" /> : <MenuIcon className="h-5 w-5" />}
+          </button>
+        </div>
       </div>
 
-      {mobileMenuOpen && (
-        <div className="border-t border-divider bg-surface px-4 py-4 lg:hidden">
-          <div className="mb-4">
-            <SearchDropdown variant="mobile" />
-          </div>
+      {/* ردیف سرچ موبایل */}
+      {searchOpen && (
+        <div className="border-t border-divider bg-surface px-4 py-3 lg:hidden">
+          <SearchDropdown variant="mobile" />
+        </div>
+      )}
 
+      {/* منوی همبرگری */}
+      {mobileMenuOpen && (
+        <div className="max-h-[calc(100dvh-3.5rem)] overflow-y-auto border-t border-divider bg-surface px-4 py-3 lg:hidden">
           <nav className="flex flex-col gap-1">
             {NAV_LINKS.map((link) => {
               const active = isActiveLink(pathname, link.href);
@@ -231,21 +267,18 @@ export function Header() {
           </nav>
 
           <div className="my-3 border-t border-divider" />
-
-          {isLoggedIn && (
-            <div className="px-3 py-1">
-              <NotificationDropdown unreadCount={unreadCount} onUnreadCountChange={setUnreadCount} />
-            </div>
-          )}
-
-          {isLoggedIn ? (
+          <ThemeToggle
+            variant="menu"
+            className="flex w-full items-center gap-2 rounded-card px-3 py-2.5 text-right text-sm text-text-secondary hover:bg-bg hover:text-text-primary"
+          />
+          {!hasCheckedAuth ? null : isLoggedIn ? (
             <>
               <Link
                 href="/profile"
                 className="flex items-center gap-2 rounded-card px-3 py-2.5 text-sm text-text-secondary hover:bg-bg hover:text-text-primary"
               >
                 <UserCircleIcon />
-                {profile?.first_name ?? ""}
+                {profile?.first_name ?? "پروفایل من"}
               </Link>
               <Link
                 href="/favorites"
@@ -273,7 +306,7 @@ export function Header() {
           ) : (
             <Link
               href="/login"
-              className="mt-2 block rounded-card bg-accent px-4 py-2.5 text-center text-sm font-semibold text-white hover:bg-accent-dark"
+              className="block rounded-card bg-accent px-4 py-2.5 text-center text-sm font-semibold text-white hover:bg-accent-dark"
             >
               ورود
             </Link>

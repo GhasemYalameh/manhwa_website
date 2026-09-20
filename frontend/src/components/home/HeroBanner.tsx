@@ -38,7 +38,7 @@ export function HeroBanner({ items }: HeroBannerProps) {
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
     >
-      <div className="relative aspect-[16/7] min-h-[220px] w-full overflow-hidden rounded-card">
+      <div className="relative aspect-[16/10] w-full overflow-hidden rounded-card sm:aspect-[16/7] sm:min-h-[220px]">
         {items.map((item, index) => (
           <div
             key={item.slug}
@@ -47,7 +47,7 @@ export function HeroBanner({ items }: HeroBannerProps) {
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src={getCoverUrl(item.cover)}
+              src={getCoverUrl(item.hero_cover ?? item.cover)}
               alt={item.fa_title || item.en_title}
               className="h-full w-full object-cover"
             />

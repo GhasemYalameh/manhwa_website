@@ -110,8 +110,7 @@ export function NotificationDropdown({ unreadCount, onUnreadCountChange }: Notif
       </button>
 
       {isOpen && (
-        <div className="absolute start-0 top-full z-50 mt-2 max-h-96 w-80 overflow-y-auto rounded-card border border-divider bg-surface py-2 shadow-lg">
-          {isLoading ? (
+          <div className="fixed inset-x-2 top-[3.75rem] z-50 max-h-[70vh] overflow-y-auto rounded-card border border-divider bg-surface py-2 shadow-lg lg:absolute lg:inset-x-auto lg:start-0 lg:top-full lg:mt-2 lg:max-h-96 lg:w-80">          {isLoading ? (
             <p className="px-4 py-3 text-sm text-text-secondary">در حال بارگذاری...</p>
           ) : items.length === 0 ? (
             <p className="px-4 py-3 text-sm text-text-secondary">اعلانی وجود ندارد.</p>

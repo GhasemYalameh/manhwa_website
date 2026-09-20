@@ -24,6 +24,8 @@ export interface ManhwaApiItem {
   created_datetime: string;
   views_count: number;
   comments_count: number;
+  chapters_count?: number;
+  hero_cover?: string | null;
   cover: string;
   is_hot: boolean;
 }

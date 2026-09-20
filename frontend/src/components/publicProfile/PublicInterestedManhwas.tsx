@@ -20,7 +20,6 @@ export function PublicInterestedManhwas({ items }: PublicInterestedManhwasProps)
             slug={item.slug}
             coverUrl={getCoverUrl(item.cover)}
             title={item.fa_title || item.en_title}
-            lastUpload={item.last_upload}
             viewsCount={item.views_count}
             commentsCount={item.comments_count}
             isHot={item.is_hot}

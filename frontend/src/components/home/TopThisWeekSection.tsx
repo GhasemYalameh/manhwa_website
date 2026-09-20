@@ -12,7 +12,7 @@ export function TopThisWeekSection({ items }: TopThisWeekSectionProps) {
   return (
     <section className="mx-auto max-w-[1400px] px-4 py-8 lg:px-8">
       <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-lg font-bold text-text-primary">پرطرفدارترین این هفته</h2>
+        <h2 className="text-lg font-bold text-text-primary">پربازدیدترین ها</h2>
       </div>
       <ol className="flex flex-col divide-y divide-divider overflow-hidden rounded-card bg-surface">
         {items.map((item, index) => (
@@ -36,7 +36,7 @@ export function TopThisWeekSection({ items }: TopThisWeekSectionProps) {
               <span dir="auto" className="min-w-0 flex-1 truncate text-sm font-medium text-text-primary">
                 {item.fa_title || item.en_title}
               </span>
-              <span className="flex shrink-0 items-center gap-1 text-2xl text-text-secondary">
+              <span className="flex shrink-0 items-center gap-1 text-xs text-text-secondary">
                 <EyeIcon className="h-5 w-5" />
                 {item.views_count.toLocaleString("fa-IR")}
               </span>

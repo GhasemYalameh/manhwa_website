@@ -177,7 +177,7 @@ export function TicketThread({ ticketId, isAdmin }: TicketThreadProps) {
   }
 
   return (
-    <main className="flex h-[calc(100vh-5rem)] flex-col bg-bg">
+    <main className="flex h-[calc(100dvh-3.5rem)] flex-col bg-bg lg:h-[calc(100dvh-5rem)]">
       <div className="shrink-0 border-b border-divider bg-surface px-4 py-3">
         <div className="mx-auto flex max-w-[900px] items-center justify-between">
           <Link href="/tickets" className="text-sm text-text-secondary hover:text-accent">

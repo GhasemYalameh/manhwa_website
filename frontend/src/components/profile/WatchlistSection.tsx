@@ -96,7 +96,7 @@ export function WatchlistSection() {
                 coverUrl={getCoverUrl(item.manhwa.cover)}
                 title={item.manhwa.fa_title || item.manhwa.en_title}
                 rating={item.manhwa.avg_rating ? Number(item.manhwa.avg_rating) : undefined}
-                lastUpload={item.manhwa.last_upload}
+                chaptersCount={item.manhwa.chapters_count}
                 viewsCount={item.manhwa.views_count}
                 commentsCount={item.manhwa.comments_count}
                 isHot={item.manhwa.is_hot}
