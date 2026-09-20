@@ -12,8 +12,13 @@ from .security import *
 DEBUG = False
 
 SECRET_KEY = os.getenv('SECRET_KEY')
-# ALLOWED_HOSTS = ['*']
-print(ALLOWED_HOSTS)
+ALLOWED_HOSTS = ['naranjtoon.style.dev', 'web']
+
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+
+CSRF_TRUSTED_ORIGINS = ['https://naranjtoon.style.dev']
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
 
 DEBUG_TOOLBAR_CONFIG = {
     "SHOW_TOOLBAR_CALLBACK": lambda x: False,
