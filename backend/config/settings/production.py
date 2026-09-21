@@ -19,6 +19,8 @@ SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 CSRF_TRUSTED_ORIGINS = ['https://naranjtoon.style.dev']
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
+CSRF_COOKIE_NAME = "naranj_csrftoken"
+SESSION_COOKIE_NAME = "naranj_sessionid"
 
 DEBUG_TOOLBAR_CONFIG = {
     "SHOW_TOOLBAR_CALLBACK": lambda x: False,
