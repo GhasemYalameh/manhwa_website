@@ -7,6 +7,6 @@ class DebugCookieMiddleware:
     def __call__(self, request):
         if request.method == "POST" and request.path.startswith("/admin"):
             info = {k: len(v) for k, v in request.COOKIES.items()}
-            logging.error("COOKIES SEEN: %s | RAW LEN: %s",
-                          info, len(request.META.get("HTTP_COOKIE", "")))
+            v = request.COOKIES.get("naranj_csrftoken", "")
+            logging.error("RAW COOKIE HEADER=%r", request.META.get("HTTP_COOKIE"))
         return self.get_response(request)
