@@ -242,7 +242,7 @@ class ManhwaViewSet(ReadOnlyModelViewSet):
         return Response(serializer.data, status=status.HTTP_201_CREATED if serializer.was_created else status.HTTP_200_OK)
 
     @action(detail=True, methods=['post'], permission_classes=(IsAuthenticated,))
-    def cache_view(self, request, title_slug=None):
+    def view(self, request, title_slug=None):
         manhwa_obj = self.get_object()
         if ManhwaService().is_exist_view(manhwa_id=manhwa_obj.id, user_id=request.user.id):
             return Response({'tracked': False, 'message': 'view exists in cache.'}, status=status.HTTP_200_OK)

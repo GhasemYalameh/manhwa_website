@@ -6,6 +6,7 @@ media/
 venv/
 .venv/
 api_docs/
+db_images/
 __pycache__/
 .env
 static/img/

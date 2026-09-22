@@ -2,6 +2,7 @@ venv/
 .venv/
 api_docs/
 nginx/
+db_images/
 
 .env
 .env.example

@@ -1,4 +1,7 @@
-import factory, random
+from pathlib import Path
+
+from charset_normalizer import from_path
+import factory, secrets, random
 from faker import Faker
 from factory.django import DjangoModelFactory
 from datetime import timedelta
@@ -7,6 +10,7 @@ from django.utils import timezone
 from django.contrib.auth import get_user_model
 from .models import *
 
+IMAGES_DIR = Path(__file__).resolve().parent.parent / 'db_images'
 fake = Faker()
 
 MANHWA_GENRES = [
@@ -25,20 +29,18 @@ PUBLICATION_STATUS = (
     'cp', 'c', 'up'
 )
 
+def get_random_image():
+    images = list(IMAGES_DIR.glob("*.jpg")) + list(IMAGES_DIR.glob("*.png")) + list(IMAGES_DIR.glob("*.webp"))
+    if not images:
+        raise FileNotFoundError("no images found in", str(IMAGES_DIR))
+    return secrets.choice(images)
+
 class StudioFactory(DjangoModelFactory):
     class Meta:
         model = Studio
         django_get_or_create = ('title',)
     title = factory.Faker('name',)
     description = factory.Faker('paragraph', nb_sentences=2, locale='fa_IR')
-
-
-# class TranslatorFactory(DjangoModelFactory):
-#     class Meta:
-#         model = Translator
-#         django_get_or_create = ('name',)
-#     name = factory.Faker('name')
-#     description = factory.Faker('paragraph', nb_sentences=2)
 
 
 class GenreFactory(DjangoModelFactory):
@@ -65,7 +67,8 @@ class ManhwaFactory(DjangoModelFactory):
     fa_title = factory.Faker('sentence', nb_words=4, locale='fa_IR')
     summary = factory.Faker('paragraph', nb_sentences=10, locale='fa_IR')
     day_of_week = factory.LazyFunction(lambda : random.choice(DAY_OF_WEEK))
-    cover = factory.django.ImageField(size=(450, 350),format='JPEG')
+    # cover = factory.django.ImageField(size=(450, 350),format='JPEG')
+    cover = factory.django.ImageField(from_path=factory.LazyFunction(get_random_image))
     hero_cover = factory.django.ImageField(size=(720, 1080),format='JPEG')
     publication_status = factory.LazyFunction(lambda : random.choice(PUBLICATION_STATUS))
     views_count = factory.LazyFunction(lambda : random.randint(200, 30000))

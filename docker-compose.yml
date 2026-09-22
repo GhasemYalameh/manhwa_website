@@ -67,6 +67,7 @@ services:
       - "8000"
     volumes:
       - ./backend:/code
+      - ./backend/db_images:/code/db_images
       - static_volume:/code/staticfiles
       - media_volume:/code/media
       - protected_media:/code/protected
