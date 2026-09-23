@@ -1,4 +1,4 @@
-import { apiGet } from "./client";
+import { apiGet, apiPost } from "./client";
 import { type PublicationStatus } from "@/lib/constants/publicationStatus";
 
 const MANHWA_PREFIX = "/api";
@@ -103,4 +103,13 @@ export function getTodayManhwas(): Promise<ManhwaApiItem[]> {
 
 export function getManhwaBySlug(slug: string): Promise<ManhwaDetailApiItem> {
   return apiGet<ManhwaDetailApiItem>(`${MANHWA_PREFIX}/manhwas/${slug}/`);
+}
+
+export interface TrackViewResponse {
+  tracked: boolean;
+  message: string;
+}
+
+export function trackView(slug: string): Promise<TrackViewResponse> {
+  return apiPost<TrackViewResponse>(`${MANHWA_PREFIX}/manhwas/${slug}/view/`, {}, { auth: true });
 }

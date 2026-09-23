@@ -4,6 +4,7 @@ import { ManhwaHeader } from "@/components/manga/ManhwaHeader";
 import { EpisodeList } from "@/components/manga/EpisodeList";
 import { CommentList } from "@/components/manga/CommentList";
 import { ApiError } from "@/lib/api/client";
+import { ViewTracker } from "@/components/manga/ViewTracker";
 
 interface ManhwaDetailPageProps {
   params: Promise<{ slug: string }>;
@@ -26,6 +27,7 @@ export default async function ManhwaDetailPage({ params, searchParams }: ManhwaD
 
   return (
     <main className="min-h-screen bg-bg pb-12">
+      <ViewTracker slug={slug} />
       <ManhwaHeader slug={slug} detail={detail} />
       <EpisodeList manhwaSlug={slug} />
       <CommentList
