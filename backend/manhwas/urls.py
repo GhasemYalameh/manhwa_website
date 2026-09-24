@@ -21,9 +21,6 @@ urlpatterns = [
     path('genre/', views.GenreListApiView.as_view(), name='genre-list'),
     path('studio/', views.StudioListApiView.as_view(), name='studio-list'),
     path('comments/mine/', views.MyComment.as_view(), name='my-comment-list'),
-    # path('api/tickets/', views.TicketApiView.as_view(), name='tickets'),
-    # path('api/tickets/<int:pk>/', views.TicketMessagesApiView.as_view(), name='ticket-messages'),
-
     path('manhwas/<slug:title_slug>/chapters/<int:chapter_id>/images/<int:image_id>', views.ProtectedChapterImageView.as_view(), name='manhwa-chapter-image-list'),
     path('', include(router.urls)),
     path('', include(manhwa_router.urls)),

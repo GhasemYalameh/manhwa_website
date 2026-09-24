@@ -84,7 +84,12 @@ def sync_view_objects_count_to_manhwa():
         View.objects.filter(manhwa_id=OuterRef('pk')).order_by().values('manhwa')
         .annotate(cnt=Count('id')).values('cnd')
     )
-    manhwas_id = redis_con.smembers(viewed_manhwas_key)
+    pipe = redis_con.pipeline()
+    pipe.smembers(viewed_manhwas_key)
+    pipe.delete(viewed_manhwas_key)
+    results = pipe.execute()
+
+    manhwas_id = results[0]
     Manhwa.objects.filter(id__in=manhwas_id).annotate(
         views_cnt=Coalesce(Subquery(viewers_sq), Value(0))
     ).update(views_count=F('views_cnt'))
