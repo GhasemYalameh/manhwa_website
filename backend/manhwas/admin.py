@@ -17,7 +17,7 @@ class ChapterInline(admin.TabularInline):
 
 @admin.register(Manhwa)
 class ManhwaAdmin(admin.ModelAdmin):
-    list_display = ('en_title', 'season', 'views_count', 'get_genres', 'chapters_count', 'comments_count')
+    list_display = ('en_title', 'id', 'season', 'views_count', 'get_genres', 'chapters_count', 'comments_count')
     autocomplete_fields = ['genres', 'studio']
     list_filter = ['genres', 'day_of_week', 'studio']
     search_fields = ['en_title']

@@ -41,3 +41,4 @@ def chapter_published_notification(chapter_id):
         curser = rows[-1]['id']
 
     logger.info('all notifications created.')
+

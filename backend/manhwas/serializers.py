@@ -48,6 +48,8 @@ class CommentSerializer(serializers.ModelSerializer):
     author = CustomUserSerializer()
     replies_count = serializers.SerializerMethodField()
     user_reaction = serializers.CharField(max_length=1, read_only=True)
+    likes_count = serializers.IntegerField(source='likes_cnt')
+    dis_likes_count = serializers.IntegerField(source='dis_likes_cnt')
     manhwa_slug = serializers.CharField(source='manhwa.title_slug')
 
     class Meta:

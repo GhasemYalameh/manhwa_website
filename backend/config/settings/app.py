@@ -18,3 +18,9 @@ OTP_SETTINGS = {
     "BLACKLIST_TTL" : 180,
     "MAX_ATTEMPTS" : 3,
 }
+
+MANHWA_REDIS_KEYS = {
+    "MANHWA_VIEWERS_ID": "manhwa:{}:viewers_id", 
+    "MANHWA_RATING_DATA": 'manhwa:{}:rating_data',
+    "VIEWED_MANHWAS_ID": "viewed:manhwas_id",
+}

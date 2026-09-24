@@ -7,6 +7,8 @@ from django.core.cache import cache
 
 import os
 
+from config.settings.app import MANHWA_REDIS_KEYS
+
 STOP_WORDS = {
     'the', 'a', 'an', 'of', 'to', 'in', 'on', 'at', 'for', 'with', 'by',
     'from', 'up', 'about', 'into', 'over', 'after', 'why', 'how', 'what',
@@ -22,8 +24,8 @@ STOP_WORDS = {
 class ManhwaService:
     def __init__(self):
         self.redis = get_redis_connection('default')
-        self.manhwa_viewers_key = 'manhwa:{}:viewers_id'
-        self.manhwa_rating_data_key = 'manhwa:{}:rating_data'
+        self.manhwa_viewers_key = MANHWA_REDIS_KEYS.get('MANHWA_VIEWERS_ID')
+        self.manhwa_rating_data_key = MANHWA_REDIS_KEYS.get('MANHWA_RATING_DATA')
 
 
     def get_rating_data(self, obj)-> dict:

@@ -26,8 +26,13 @@ CELERY_BEAT_SCHEDULE = {
         'task': 'manhwas.sync_pending_views',
         'schedule': timedelta(hours=2),  # 2 hours
     },
+    'sync-manhwas-views-to-view-objects-everyday': {
+        'task': 'manhwas.sync_view_objects_count_to_manhwa',
+        'schedule': timedelta(days=1),  # 4 days
+    },
     'mark-hot-manhwas-every-4-days': {
         'task': 'manhwas.mark_five_hot_manhwas',
         'schedule': timedelta(days=4),  # 4 days
     },
+
 }

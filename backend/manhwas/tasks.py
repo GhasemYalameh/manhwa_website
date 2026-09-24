@@ -1,10 +1,7 @@
-import os
-
+import os, logging, zipfile
 from celery import shared_task
-import logging
-import zipfile
 
-from django.db.models import F, Q, FloatField, Value
+from django.db.models import F, Q, Count, FloatField, OuterRef, Subquery, Value
 from django.db.models.aggregates import Avg
 from django.db.models.functions import Coalesce
 from django.forms.fields import FloatField
@@ -12,14 +9,13 @@ from django_redis import get_redis_connection
 from django.core.files.base import ContentFile
 
 from .models import Chapter, ChapterImage, Manhwa, View
+from config.settings.app import MANHWA_REDIS_KEYS
 
 logger = logging.getLogger(__name__)
-
 redis_con = get_redis_connection('default')
 
 IMAGE_ALLOWED_FORMATS = {'.jpg', '.jpeg', '.png', '.webp'}
 
-# TODO: add a task to sync real views to manhwa field every 10 days.
 
 @shared_task(name='manhwas.sync_pending_views')
 def sync_pending_views():
@@ -39,13 +35,14 @@ def sync_pending_views():
             break
 
     for manhwa_id in manhwa_ids:
-        manhwa_viewers_key = f'manhwa:{manhwa_id}:viewers_id'
-
+        viewers_key = MANHWA_REDIS_KEYS.get('MANHWA_VIEWERS_ID').format(manhwa_id)
+        viewed_manhwas_key = MANHWA_REDIS_KEYS.get('VIEWED_MANHWAS_ID')
         # atomic process
         pipe = redis_con.pipeline()
-        pipe.smembers(manhwa_viewers_key)
-        pipe.scard(manhwa_viewers_key)
-        pipe.delete(manhwa_viewers_key)
+        pipe.smembers(viewers_key)
+        pipe.scard(viewers_key)
+        pipe.sunionstore(viewed_manhwas_key, viewed_manhwas_key, viewers_key)
+        pipe.delete(viewers_key)
         results = pipe.execute()
 
         manhwa_viewers_id = [int(mvid) for mvid in results[0]]  # mvid (manhwa viewer id)
@@ -56,12 +53,10 @@ def sync_pending_views():
             continue
 
         try:
-            view_objects = [View(manhwa_id=manhwa_id, user_id=uid) for uid in manhwa_viewers_id]
-
-            # update manhwa views count
             Manhwa.objects.filter(pk=manhwa_id).update(views_count=F('views_count') + manhwa_viewers_count)
 
             # crete view objects
+            view_objects = [View(manhwa_id=manhwa_id, user_id=uid) for uid in manhwa_viewers_id]
             View.objects.bulk_create(view_objects, ignore_conflicts=True)
 
             update_count += 1
@@ -79,6 +74,22 @@ def sync_pending_views():
         'total_views': total_viewers,
         'updated_manhwas': update_count,
     }
+
+@shared_task(name='manhwas.sync_view_objects_count_to_manhwa')
+def sync_view_objects_count_to_manhwa():
+    logger.info('Starting to sync views objects count to manhwa...')
+
+    viewed_manhwas_key = MANHWA_REDIS_KEYS.get('VIEWED_MANHWAS_ID')
+    viewers_sq = (
+        View.objects.filter(manhwa_id=OuterRef('pk')).order_by().values('manhwa')
+        .annotate(cnt=Count('id')).values('cnd')
+    )
+    manhwas_id = redis_con.smembers(viewed_manhwas_key)
+    Manhwa.objects.filter(id__in=manhwas_id).annotate(
+        views_cnt=Coalesce(Subquery(viewers_sq), Value(0))
+    ).update(views_count=F('views_cnt'))
+
+    logger.info('Syncing View Objects Completed .All Manhwa\'s view_count is up to date now')
 
 @shared_task(name='manhwas.mark_five_hot_manhwas')
 def mark_five_hot_manhwas():
