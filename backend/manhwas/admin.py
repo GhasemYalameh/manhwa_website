@@ -91,8 +91,8 @@ class ChapterAdmin(admin.ModelAdmin):
         is_new_zip = 'zip_file' in form.changed_data and obj.zip_file
         super().save_model(request, obj, form, change)
 
-        if is_new_zip:
-            create_chapter_image_objects.delay(obj.id)
+        # if is_new_zip:
+        #     create_chapter_image_objects.delay(obj.id)
 
 @admin.register(ChapterImage)
 class ChapterImageAdmin(admin.ModelAdmin):

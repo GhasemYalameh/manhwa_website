@@ -134,6 +134,7 @@ class ManhwaSerializer(serializers.ModelSerializer):
     comments_count = serializers.IntegerField( read_only=True)
     chapters_count = serializers.IntegerField( read_only=True)
     cover = serializers.URLField(source='cover.url', read_only=True)
+    hero_cover = serializers.URLField(source='hero_cover.url', read_only=True)
     avg_rating = serializers.DecimalField(max_digits=3, decimal_places=1, read_only=True)
     slug = serializers.CharField(source='title_slug', read_only=True)
 

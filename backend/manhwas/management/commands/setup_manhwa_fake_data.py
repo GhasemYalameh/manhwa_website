@@ -5,14 +5,20 @@ from manhwas.models import *
 from manhwas.factory_fake import *
 from accounts.models import CustomUser
 
-DJANGO_MODELS = [CustomUser, Manhwa, Genre, Studio, View, Rate, Comment,]
-NUM_MANHWAS = 300
-NUM_USERS = 200
+DJANGO_MODELS = [CustomUser, Chapter, Manhwa, Genre, Studio, View, Rate, Comment,]
+NUM_MANHWAS = 100
+NUM_USERS = 2000
 NUM_GENRES = 20
 NUM_STUDIOS = 20
-NUM_COMMENTS = 1000
-NUM_RATES = 10000
+CHAPTERS_MAX_NUM = 3000
+REACTIONS_MAX_NUM = 30000
+COMMENTS_MAX_NUM = 5000
+RATES_MAX_NUM = 10000
 CACHE_NUM = 0
+
+def list_to_generator(g_list):
+    for item in g_list:
+        yield item
 
 
 class Command(BaseCommand):
@@ -44,11 +50,10 @@ class Command(BaseCommand):
 
 
         #  MANHWAS
-        self.write(f'CREATING {NUM_MANHWAS} MANHWAS...', ending='')
+        self.write(f'CREATING MANHWAS...', ending='')
         GenresList.set(genres)
         CACHE_NUM = 0
-        created = 0
-        manhwas = []
+        created, manhwas = 0, []
         for studio in studios :
             keep , num = self.get_num(NUM_MANHWAS, rand=(10, 15))
             manhwas += ManhwaFactory.create_batch(num, studio=studio)
@@ -66,36 +71,55 @@ class Command(BaseCommand):
         self.write('DONE.', style='success')
 
         #  COMMENTS
-        self.write(f'CREATING {NUM_COMMENTS} COMMENTS...', ending='')
+        self.write(f'CREATING {COMMENTS_MAX_NUM} COMMENTS...', ending='')
         CACHE_NUM = 0
         comments = []
         for manhwa in manhwas :
-            keep, num = self.get_num(NUM_COMMENTS, rand=(3, 8))
+            num = random.randint(15, 20)
             comment_users = random.sample(users, k=num)
             for user in comment_users:
                 comments.append(
-                    CommentFactory.create(
-                        author=user,
-                        manhwa=manhwa,
-                    )
+                    CommentFactory.create(author=user, manhwa=manhwa,)
                 )
-            if not keep:
-                break
+
         self.write('DONE.', style='success')
 
+
+        #  CHAPTERS   
+        self.write(f'CREATING CHAPTERS...', ending='')
+        # creating reaction for random comments
+        for manhwa in list_to_generator(manhwas):
+            num = random.randint(10, 30)
+            for _ in range(num):
+                ChapterFactory.create(manhwa=manhwa)
+        self.write('DONE.', style='success')
+
+
+        #  COMMENT_REACTIONS   
+        self.write(f'CREATING COMMENT-REACTIONS...', ending='')
+        for comment in list_to_generator(comments):
+            # creating reaction for random comments
+            if random.randint(0, 10) % 2 == 0:
+                continue
+
+            num = random.randint(10, 15)
+            reaction_users = random.sample(users, k=num)
+            for user in reaction_users:
+                CommentReactionFactory.create(user=user, comment=comment)
+
+        self.write('DONE.', style='success')
+
+
         # RATES
-        self.write(f'CREATING {NUM_RATES} RATES...', ending='')
+        self.write(f'CREATING {RATES_MAX_NUM} RATES...', ending='')
         rates = []
         for manhwa in manhwas:
-            keep, num = self.get_num(NUM_RATES, rand=(25, 35))
+            num = random.randint(25, 35)
             rate_users = random.sample(users, k=num)
             for user in rate_users:
                 rates.append(
                     RateFactory.create(user=user, manhwa=manhwa)
                 )
-
-            if not keep:
-                break
 
         self.write('DONE.', style='success')
 
