@@ -1,14 +1,15 @@
 from django.db.models import Count, OuterRef, Subquery, IntegerField
 from django.db.models.functions import Coalesce
 from django.shortcuts import get_object_or_404
-
 from django.utils import timezone
+
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.token_blacklist.models import OutstandingToken, BlacklistedToken
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.throttling import ScopedRateThrottle
 
 from accounts.services.otp import BlackListManager
 from manhwas.models import Rate, View, WatchList, Comment
@@ -22,6 +23,19 @@ from .serializers import (
 
 class MeApiView(APIView):
     permission_classes=[IsAuthenticated]
+    
+    def get_throttles(self):
+        match self.request.method:
+            case 'GET':
+               self.throttle_scope = 'hundred_in_minute' 
+
+            case 'PATCH':
+                self.throttle_scope = 'three_in_hour'
+
+            case _:
+                raise NotImplementedError('action throttle not set.') 
+              
+        return [ScopedRateThrottle()]
 
     def get(self, request):
         user = CustomUser.objects.prefetch_related('subscription').get(pk=request.user.id)
@@ -36,6 +50,9 @@ class MeApiView(APIView):
 
 
 class UserProfileDetailView(APIView):
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = 'hundred_in_minute'
+
     def get(self, request, uid: str):
         # subqueries
         watch_list_qs = WatchList.objects.filter(user_id=OuterRef('pk'))
@@ -63,7 +80,11 @@ class UserProfileDetailView(APIView):
 class GenerateRegistrationOTPApiView(APIView):
     """
     generating OTP and send via sms.
-    """
+    """    
+
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = 'five_in_hour'
+
     def post(self, request):
         serializer = GetPhoneNumberSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -87,6 +108,9 @@ class VerifyRegistrationOTPApiView(APIView):
     verify otp code and register user.
     returns access token and refresh token.
     """
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = 'five_in_hour'
+
     def post(self, request):
         serializer = VerifyRegistrationOTPCodeSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -123,6 +147,9 @@ class VerifyRegistrationOTPApiView(APIView):
 
 
 class SignUpWithPasswordApiView(APIView):
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = 'five_in_hour'
+
     def post(self, request):
         serializer = SignUpWithPasswordSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -135,6 +162,9 @@ class CompleteSignUpWithOTPApiView(APIView):
     """
     after creating new user, user must redirected to this view for completion of signin.
     """
+
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = 'five_in_hour'
     permission_classes = (IsAuthenticated,)
 
     def post(self, request):
@@ -145,6 +175,9 @@ class CompleteSignUpWithOTPApiView(APIView):
 
 
 class LoginWithPasswordApiView(APIView):
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = 'five_in_hour'
+
     def post(self, request):
         serializer = LoginWithPasswordSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -176,7 +209,10 @@ class GenerateChangePassOTPApiView(APIView):
     when user wanna change herself password, he must generate an OTP
     to confirm change password.
     """
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = 'five_in_hour'
     permission_classes = (IsAuthenticated,)
+
     def post(self, request):
         phone_number:str = request.user.phone_number
         otp = OTP(phone_number)
@@ -193,6 +229,8 @@ class GenerateChangePassOTPApiView(APIView):
 
 
 class VerifyChangePassOTPApiView(APIView):
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = 'five_in_hour'
     permission_classes = (IsAuthenticated,)
 
     def post(self, request):

@@ -4,6 +4,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.throttling import ScopedRateThrottle
 
 from .services import SubscriptionService
 from .models import SubscriptionOrder, SubscriptionPlan
@@ -12,6 +13,19 @@ from . import serializers as srlzr
 
 class SubscriptionApi(APIView):
     permission_classes = [IsAuthenticated,]
+
+    def get_throttles(self):
+        match self.request.method:
+            case 'GET':
+               self.throttle_scope = 'hundred_in_minute' 
+
+            case 'POST':
+                self.throttle_scope = 'five_in_hour'
+
+            case _:
+                raise NotImplementedError('action throttle not set.') 
+              
+        return [ScopedRateThrottle()]
 
     def get(self, request):
         sub_service = SubscriptionService(request)
@@ -33,6 +47,8 @@ class SubscriptionApi(APIView):
 
 
 class SubscriptionVerify(APIView):
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = 'five_in_hour'
     permission_classes = [IsAuthenticated, ]
 
     def get(self, request):
@@ -56,11 +72,15 @@ class SubscriptionVerify(APIView):
 
 
 class SubscriptionPlanList(ListAPIView):
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = 'hundred_in_minute'
     serializer_class = srlzr.SubscriptionPlanListSerializer
     queryset = SubscriptionPlan.objects.filter(is_purchasable=True)
 
 
 class SubscriptionOrderList(ListAPIView):
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = 'hundred_in_minute'
     permission_classes = (IsAuthenticated,)
     serializer_class = srlzr.SubscriptionOrderSerializer
 

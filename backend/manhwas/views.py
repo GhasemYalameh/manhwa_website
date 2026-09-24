@@ -4,14 +4,18 @@ from django.db.models.functions import Coalesce
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404
 from django.utils.functional import cached_property
+from django.utils.decorators import method_decorator
+from django.views.decorators.cache import cache_page
 
 from rest_framework import status, exceptions
-from rest_framework.decorators import  APIView, action
+from rest_framework.views import  APIView
+from rest_framework.decorators import  action
 from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser
 from rest_framework.response import Response
 from rest_framework.viewsets import ReadOnlyModelViewSet, ModelViewSet
 from rest_framework.generics import ListAPIView
 from rest_framework.filters import SearchFilter, OrderingFilter
+from rest_framework.throttling import ScopedRateThrottle
 from django_filters.rest_framework import DjangoFilterBackend
 
 from . import serializers as srilzr
@@ -45,6 +49,20 @@ class TicketViewSet(ModelViewSet):
     ordering_fields = ('is_seen', 'status', 'created_at',)
     filterset_fields = ('status','is_seen')
 
+
+    def get_throttles(self):
+        match self.action:
+            case ('list'|'retrieve'):
+                self.throttle_scope = 'hundred_in_minute'
+
+            case ('partial_update'|'create'):
+                self.throttle_scope = 'ten_in_minute'
+
+            case _:
+                raise NotImplementedError('action throttle not set.')
+            
+        return [ScopedRateThrottle()]
+
     def get_queryset(self):
         query = Ticket.objects.select_related('user').prefetch_related('messages').all()
         if (self.action in ['list', 'retrieve']) and not self.request.user.is_staff:
@@ -73,6 +91,18 @@ class TicketMessageViewSet(ModelViewSet):
     permission_classes = (IsAuthenticated, IsOwnerOrAdmin)
     pagination_class = CustomPagination
     http_method_names = ('get', 'post', 'patch', 'delete',)
+
+    def get_throttles(self):
+        match self.action:
+            case ('list'|'retrieve'):
+               self.throttle_scope = 'hundred_in_minute' 
+
+            case ('partial_update'|'destroy'|'create'):
+                self.throttle_scope = 'ten_in_minute'
+
+            case _:
+                raise NotImplementedError('action throttle not set.')
+        return [ScopedRateThrottle()]
 
     def get_queryset(self):
         ticket_id = int(self.kwargs['ticket_pk'])
@@ -107,6 +137,25 @@ class CommentViewSet(ModelViewSet):
         manhwa_slug = self.kwargs['manhwa_title_slug']
         return get_object_or_404(Manhwa, title_slug=manhwa_slug)
 
+    def get_throttles(self):
+        match self.action:
+            case ('list'|'retrieve'|'replies'):
+               self.throttle_scope = 'hundred_in_minute' 
+
+            case 'create':
+                self.throttle_scope = 'eight_in_minute'
+
+            case ('partial_update'|'destroy'):
+                self.throttle_scope = 'ten_in_minute'
+
+            case 'reaction':
+                self.throttle_scope = 'twenty_in_minute'
+
+            case _:
+                raise NotImplementedError('action throttle not set.') 
+            
+        return [ScopedRateThrottle()]
+    
     def get_permissions(self):
         match self.action:
             case 'create' | 'partial_update' | 'destroy':
@@ -185,6 +234,8 @@ class CommentViewSet(ModelViewSet):
 class MyComment(APIView):
     permission_classes = (IsAuthenticated,)
     pagination_class = CustomPagination
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = 'hundred_in_minute'
 
     def get(self, request):
         my_comments_qs =  Comment.objects.filter(author_id=request.user.id).order_by('-created_at')
@@ -200,6 +251,26 @@ class ManhwaViewSet(ReadOnlyModelViewSet):
     ordering_fields = ('publication_datetime', 'avg_rating', 'views_count', 'last_upload_time', 'datetime_created',)
     filterset_fields = ('day_of_week', 'genres', 'studio')
 
+
+    def get_throttles(self):
+        match self.action:
+            case ('list'|'retrieve'|'today'):
+               self.throttle_scope = 'hundred_in_minute' 
+
+            case 'view':
+                self.throttle_scope = 'twenty_in_minute'
+
+            case 'rate':
+                method = self.request.method 
+                if method == 'GET':
+                    self.throttle_scope = 'hundred_in_minute'
+                elif method == 'POST':
+                    self.throttle_scope = 'ten_in_minute'
+            case _:
+                raise NotImplementedError('action throttle not set.')
+
+        return [ScopedRateThrottle()]
+    
 # ---- many query in filter --------
     def get_queryset(self):
         base_query = Manhwa.objects.all()
@@ -264,6 +335,8 @@ class ManhwaViewSet(ReadOnlyModelViewSet):
 class ChapterViewSet(ReadOnlyModelViewSet):
     permission_classes = (IsAuthenticated,)
     serializer_class = srilzr.ChapterSerializer
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = 'hundred_in_minute'
 
     def get_queryset(self):
         manhwa_slug = self.kwargs.get('manhwa_title_slug')
@@ -272,6 +345,8 @@ class ChapterViewSet(ReadOnlyModelViewSet):
 
 class ProtectedChapterImageView(APIView):
     permission_classes = (IsAuthenticated,)
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = 'hundred_in_minute'
 
     def get(self, request, title_slug, chapter_id, image_id):
         chapter_image = get_object_or_404(ChapterImage, id=image_id, chapter_id=chapter_id)
@@ -284,12 +359,17 @@ class ProtectedChapterImageView(APIView):
         return response
 
 
+@method_decorator(cache_page(15*60), name='dispatch')
 class GenreListApiView(ListAPIView):
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = 'hundred_in_minute'
     serializer_class = srilzr.GenreListSerializer
     queryset = Genre.objects.all()
 
-
+@method_decorator(cache_page(15*60), name='dispatch')
 class StudioListApiView(ListAPIView):
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = 'hundred_in_minute'
     serializer_class = srilzr.StudioListSerializer
     queryset = Studio.objects.all()
 
@@ -299,6 +379,20 @@ class WatchListViewSet(ModelViewSet):
     permission_classes = (IsAuthenticated,)
     pagination_class = CustomPagination
     filterset_fields = ('user',)
+
+
+    def get_throttles(self):
+        match self.action:
+            case ('list'|'retrieve'):
+               self.throttle_scope = 'hundred_in_minute' 
+
+            case ('partial_update'|'destroy'|'create'):
+                self.throttle_scope = 'fifteen_in_minute'
+
+            case _:
+                raise NotImplementedError('action throttle not set.') 
+              
+        return [ScopedRateThrottle()]
 
     def get_serializer_class(self):
         if self.action == 'partial_update':

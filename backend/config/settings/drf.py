@@ -16,7 +16,17 @@ REST_FRAMEWORK = {
     "DEFAULT_THROTTLE_RATES": {
         "anon": "100/min",
         "user": "300/min",
-        "otp": "5/hour",
+
+
+        "three_in_hour": "3/hour",
+        "five_in_hour": "5/hour",
+
+        "five_in_minute": "5/min",
+        "eight_in_minute": "8/min",
+        "ten_in_minute": "10/min",
+        "fifteen_in_minute": "15/min",
+        "twenty_in_minute": "20/min",        
+        "hundred_in_minute": "100/min",
     },
     "NUM_PROXIES": 1,
 }
