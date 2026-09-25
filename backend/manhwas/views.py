@@ -175,24 +175,14 @@ class CommentViewSet(ModelViewSet):
                 return base_qs
             case 'partial_update' | 'destroy':
                 return base_qs.filter(author_id=self.request.user.id)
-            case 'list' :
+            case ('list'|'retrieve') :
                 query = optimized_qs.filter(level=0)
                 reaction_sq = (
                     CommentReAction.objects.filter(user_id=self.request.user.id,comment_id=OuterRef('pk'))
                     .values('reaction')
                 )
-                likes_count_sq = (
-                    CommentReAction.objects.filter(comment_id=OuterRef('pk'), reaction=CommentReAction.LIKE)
-                    .order_by().values('comment').annotate(cnt=Count('id')).values('cnt')
-                )
-                dis_likes_count_sq = (
-                    CommentReAction.objects.filter(comment_id=OuterRef('pk'), reaction=CommentReAction.DISLIKE)
-                    .order_by().values('comment').annotate(cnt=Count('id')).values('cnt')
-                )
                 return query if not self.request.user.is_authenticated else query.annotate(
                     user_reaction=Coalesce(Subquery(reaction_sq), Value('no-reaction')),
-                    likes_cnt= Coalesce(Subquery(likes_count_sq), Value(0)),
-                    dis_likes_cnt= Coalesce(Subquery(dis_likes_count_sq), Value(0)),
                 )
 
         return base_qs.filter(pk=pk)  # create, detail

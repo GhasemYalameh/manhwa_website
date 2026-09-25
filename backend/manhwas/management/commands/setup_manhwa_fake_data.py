@@ -1,3 +1,5 @@
+from django.db.models import OuterRef, Subquery, Value
+from django.db.models.functions import Coalesce
 import factory
 from django.core.management.base import BaseCommand
 from django.db import transaction
@@ -60,7 +62,6 @@ class Command(BaseCommand):
             created += num
             if not keep:
                 break
-
         self.write('DONE.', style='success')
         self.write(f'{created} MANHWAS CREATED.')
 
@@ -69,6 +70,7 @@ class Command(BaseCommand):
         self.write(f'CREATING {NUM_USERS} NUMBER OF USERS...', ending='')
         users = UserFactory.create_batch(NUM_USERS)
         self.write('DONE.', style='success')
+
 
         #  COMMENTS
         self.write(f'CREATING {COMMENTS_MAX_NUM} COMMENTS...', ending='')
@@ -81,7 +83,6 @@ class Command(BaseCommand):
                 comments.append(
                     CommentFactory.create(author=user, manhwa=manhwa,)
                 )
-
         self.write('DONE.', style='success')
 
 
@@ -106,7 +107,6 @@ class Command(BaseCommand):
             reaction_users = random.sample(users, k=num)
             for user in reaction_users:
                 CommentReactionFactory.create(user=user, comment=comment)
-
         self.write('DONE.', style='success')
 
 
@@ -120,8 +120,31 @@ class Command(BaseCommand):
                 rates.append(
                     RateFactory.create(user=user, manhwa=manhwa)
                 )
-
         self.write('DONE.', style='success')
+
+        transaction.on_commit(self._update_reactions_count)
+
+    def _update_reactions_count(self):
+        """
+        updating  likes_count & dis_likes_count fields after 
+        db committing.
+        """
+        like_count_sq = (
+            CommentReAction.objects.filter(comment_id=OuterRef('pk'), reaction='lk')
+            .order_by().values('comment').annotate(cnt=Count('pk')).values('cnt')
+        )
+        dislike_count_sq = (
+            CommentReAction.objects.filter(comment_id=OuterRef('pk'), reaction='lk')
+            .order_by().values('comment').annotate(cnt=Count('pk')).values('cnt')
+        )
+
+        Comment.objects.annotate(
+            lk=Coalesce(Subquery(like_count_sq), Value(0)),
+            dlk=Coalesce(Subquery(dislike_count_sq), Value(0)),
+        ).update(
+            likes_count=F('lk'),
+            dis_likes_count=F('dlk'),
+        )
 
     def get_num(self, maximum, rand=(1, 10)):
         global CACHE_NUM
