@@ -82,7 +82,6 @@ class ManhwaFactory(DjangoModelFactory):
     cover = factory.django.ImageField(from_path=factory.LazyFunction(get_random_image))
     hero_cover = factory.django.ImageField(size=(720, 1080),format='JPEG')
     publication_status = factory.LazyFunction(lambda : random.choice(PUBLICATION_STATUS))
-    views_count = factory.LazyFunction(lambda : random.randint(200, 30000))
     publication_datetime = factory.LazyFunction(
         lambda : timezone.now() - timedelta(days=random.randint(1, 1000))
     )

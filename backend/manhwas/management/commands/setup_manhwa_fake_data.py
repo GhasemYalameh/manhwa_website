@@ -122,19 +122,29 @@ class Command(BaseCommand):
                 )
         self.write('DONE.', style='success')
 
-        transaction.on_commit(self._update_reactions_count)
 
-    def _update_reactions_count(self):
+        # VIEWS
+        self.write(f'CREATING VIEWS...', ending='')
+        for manhwa in manhwas:
+            num = random.randint(50, 500)
+            view_users = random.sample(users, k=num)
+            for user in view_users:
+                ViewFactory.create(manhwa=manhwa, user=user)
+        self.write('DONE.', style='success')
+
+
+        transaction.on_commit(self._update_counter_fields)
+
+    def _update_counter_fields(self):
         """
-        updating  likes_count & dis_likes_count fields after 
-        db committing.
+        updating  counter fields after db committing.
         """
         like_count_sq = (
             CommentReAction.objects.filter(comment_id=OuterRef('pk'), reaction='lk')
             .order_by().values('comment').annotate(cnt=Count('pk')).values('cnt')
         )
         dislike_count_sq = (
-            CommentReAction.objects.filter(comment_id=OuterRef('pk'), reaction='lk')
+            CommentReAction.objects.filter(comment_id=OuterRef('pk'), reaction='dlk')
             .order_by().values('comment').annotate(cnt=Count('pk')).values('cnt')
         )
 
@@ -145,6 +155,11 @@ class Command(BaseCommand):
             likes_count=F('lk'),
             dis_likes_count=F('dlk'),
         )
+        views_count_sq = (
+            View.objects.filter(manhwa_id=OuterRef('pk'))
+            .order_by().values('manhwa').annotate(cnt=Count('pk')).values('cnt')
+        )
+        Manhwa.objects.annotate(view_cnt=Coalesce(Subquery(views_count_sq), Value(0))).update(views_count=F('view_cnt'))
 
     def get_num(self, maximum, rand=(1, 10)):
         global CACHE_NUM
