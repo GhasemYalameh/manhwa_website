@@ -16,7 +16,6 @@ import {
   MenuIcon,
   XIcon,
   UserCircleIcon,
-  HeartIcon,
   LogOutIcon,
   CommentIcon,
   SearchIcon,
@@ -176,14 +175,6 @@ export function Header() {
                     پروفایل من
                   </Link>
                   <Link
-                    href="/favorites"
-                    onClick={() => setUserMenuOpen(false)}
-                    className="flex items-center gap-2 px-4 py-2 text-sm text-text-primary hover:text-accent"
-                  >
-                    <HeartIcon />
-                    علاقه‌مندی‌ها
-                  </Link>
-                  <Link
                     href="/tickets"
                     onClick={() => setUserMenuOpen(false)}
                     className="flex items-center gap-2 px-4 py-2 text-sm text-text-primary hover:text-accent"
@@ -280,13 +271,7 @@ export function Header() {
                 <UserCircleIcon />
                 {profile?.first_name ?? "پروفایل من"}
               </Link>
-              <Link
-                href="/favorites"
-                className="flex items-center gap-2 rounded-card px-3 py-2.5 text-sm text-text-secondary hover:bg-bg hover:text-text-primary"
-              >
-                <HeartIcon />
-                علاقه‌مندی‌ها
-              </Link>
+
               <Link
                 href="/tickets"
                 className="flex items-center gap-2 rounded-card px-3 py-2.5 text-sm text-text-secondary hover:bg-bg hover:text-text-primary"

@@ -5,7 +5,8 @@ import { getAccessToken } from "@/lib/api/client";
 import { useToast } from "@/components/ui/Toast";
 import { CommentForm } from "@/components/manga/CommentForm";
 import { CommentItem } from "@/components/manga/CommentItem";
-import { getComments, getComment, createComment, type CommentApiItem } from "@/lib/api/comment";
+import { getComments, getCommentChain, createComment, type CommentApiItem } from "@/lib/api/comment";
+import { getMe } from "@/lib/api/auth";
 
 interface CommentListProps {
   manhwaSlug: string;
@@ -13,7 +14,6 @@ interface CommentListProps {
 }
 
 const PAGE_SIZE = 10;
-const MAX_CHAIN_STEPS = 5;
 
 export function CommentList({ manhwaSlug, highlightCommentId }: CommentListProps) {
   const { showToast } = useToast();
@@ -22,13 +22,19 @@ export function CommentList({ manhwaSlug, highlightCommentId }: CommentListProps
   const [page, setPage] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
 
   const [chainPath, setChainPath] = useState<CommentApiItem[]>([]);
   const [chainLoading, setChainLoading] = useState(false);
   const [chainError, setChainError] = useState(false);
 
   useEffect(() => {
-    setIsLoggedIn(!!getAccessToken());
+    const loggedIn = !!getAccessToken();
+    setIsLoggedIn(loggedIn);
+    if (!loggedIn) return;
+    getMe()
+      .then((profile) => setCurrentUserId(profile.id))
+      .catch(() => { });
   }, []);
 
   // بارگذاری اولیه‌ی صفحه‌ی ۱ — کاملاً سمت کلاینت (دیگه از سرور initialComments نمی‌گیریم)
@@ -61,34 +67,20 @@ export function CommentList({ manhwaSlug, highlightCommentId }: CommentListProps
     setChainLoading(true);
     setChainError(false);
 
-    async function buildChain() {
-      const chain: CommentApiItem[] = [];
-      let current: CommentApiItem;
-      try {
-        current = await getComment(manhwaSlug, highlightCommentId!);
-      } catch {
+    getCommentChain(manhwaSlug, highlightCommentId)
+      .then((chain) => {
+        if (cancelled) return;
+        // خروجی بک‌اند رو بر اساس level مرتب می‌کنیم تا همیشه ریشه → هدف باشه، صرف‌نظر از ترتیب برگشتی API
+        const sorted = [...chain].sort((a, b) => a.level - b.level);
+        setChainPath(sorted);
+      })
+      .catch(() => {
         if (!cancelled) setChainError(true);
+      })
+      .finally(() => {
         if (!cancelled) setChainLoading(false);
-        return;
-      }
-      chain.unshift(current);
-      let steps = 0;
-      while (current.parent !== null && steps < MAX_CHAIN_STEPS) {
-        try {
-          current = await getComment(manhwaSlug, current.parent);
-        } catch {
-          break;
-        }
-        chain.unshift(current);
-        steps++;
-      }
-      if (!cancelled) {
-        setChainPath(chain);
-        setChainLoading(false);
-      }
-    }
+      });
 
-    buildChain();
     return () => {
       cancelled = true;
     };
@@ -168,6 +160,7 @@ export function CommentList({ manhwaSlug, highlightCommentId }: CommentListProps
                 comment={chainPath[0]}
                 replyChain={chainPath.slice(1)}
                 highlightId={highlightCommentId}
+                currentUserId={currentUserId}
               />
             </ul>
           )}
@@ -181,7 +174,7 @@ export function CommentList({ manhwaSlug, highlightCommentId }: CommentListProps
       ) : (
         <ul className={`flex flex-col gap-4 transition-opacity ${isLoading ? "opacity-50" : "opacity-100"}`}>
           {comments.map((comment) => (
-            <CommentItem key={comment.id} manhwaSlug={manhwaSlug} comment={comment} />
+            <CommentItem key={comment.id} manhwaSlug={manhwaSlug} comment={comment} currentUserId={currentUserId}/>
           ))}
         </ul>
       )}

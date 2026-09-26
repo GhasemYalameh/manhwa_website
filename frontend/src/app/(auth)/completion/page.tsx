@@ -50,7 +50,7 @@ export default function CompletionPage() {
         last_name: lastName.trim() || undefined,
         email: email.trim() || undefined,
       });
-      router.push("/dashboard");
+      router.push("/profile");
     } catch (err) {
       if (err instanceof ApiError && err.status === 401) {
         // توکن منقضی یا نامعتبره؛ کاربر باید دوباره وارد بشه

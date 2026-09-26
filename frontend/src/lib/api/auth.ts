@@ -69,6 +69,7 @@ export function loginWithPassword(
 export { getAccessToken, storeTokens, getRefreshToken, clearTokens } from "./client";
 
 export interface UserProfile {
+  id: string;
   first_name: string;
   last_name: string;
   avatar: string | null; // relative URL

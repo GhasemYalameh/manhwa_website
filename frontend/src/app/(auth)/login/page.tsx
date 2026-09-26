@@ -68,7 +68,7 @@ function LoginForm() {
     try {
       const res = await loginWithPassword(phone, password);
       storeTokens(res.access_token, res.refresh_token);
-      router.push("/dashboard");
+      router.push("/profile");
     } catch (err) {
       if (err instanceof ApiError) {
         setError(extractMessage(err.body) ?? "شماره موبایل یا رمز عبور اشتباه است.");

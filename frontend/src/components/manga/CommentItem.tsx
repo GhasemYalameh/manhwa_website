@@ -11,6 +11,8 @@ import {
   getCommentReplies,
   createComment,
   toggleCommentReaction,
+  updateComment,
+  deleteComment,
   type CommentApiItem,
   type CommentReaction,
 } from "@/lib/api/comment";
@@ -23,9 +25,16 @@ interface CommentItemProps {
   comment: CommentApiItem;
   replyChain?: CommentApiItem[];
   highlightId?: number;
+  currentUserId?: string | null;
 }
 
-export function CommentItem({ manhwaSlug, comment: initialComment, replyChain, highlightId }: CommentItemProps) {
+export function CommentItem({
+  manhwaSlug,
+  comment: initialComment,
+  replyChain,
+  highlightId,
+  currentUserId,
+}: CommentItemProps) {
   const { showToast } = useToast();
   const [comment, setComment] = useState(initialComment);
   const hasChainReply = !!replyChain && replyChain.length > 0;
@@ -36,6 +45,14 @@ export function CommentItem({ manhwaSlug, comment: initialComment, replyChain, h
   const [isReacting, setIsReacting] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isSpoilerRevealed, setIsSpoilerRevealed] = useState(false);
+
+  const [isEditing, setIsEditing] = useState(false);
+  const [editText, setEditText] = useState(comment.text);
+  const [isSavingEdit, setIsSavingEdit] = useState(false);
+  const [isDeleted, setIsDeleted] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const isOwner = !!currentUserId && comment.author?.id === currentUserId;
 
   const isTarget = highlightId === comment.id;
   const itemRef = useRef<HTMLLIElement>(null);
@@ -116,8 +133,39 @@ export function CommentItem({ manhwaSlug, comment: initialComment, replyChain, h
     }
   }
 
+  async function handleSaveEdit() {
+    const trimmed = editText.trim();
+    if (!trimmed || isSavingEdit) return;
+    setIsSavingEdit(true);
+    try {
+      await updateComment(manhwaSlug, comment.id, trimmed);
+      setComment((prev) => ({ ...prev, text: trimmed }));
+      setIsEditing(false);
+      showToast("نظر شما ویرایش شد.", "success");
+    } catch {
+      showToast("ویرایش نظر با خطا مواجه شد.", "error");
+    } finally {
+      setIsSavingEdit(false);
+    }
+  }
+
+  async function handleDelete() {
+    if (isDeleting) return;
+    if (!window.confirm("آیا از حذف این نظر مطمئن هستید؟")) return;
+    setIsDeleting(true);
+    try {
+      await deleteComment(manhwaSlug, comment.id);
+      setIsDeleted(true);
+      showToast("نظر شما حذف شد.", "success");
+    } catch {
+      showToast("حذف نظر با خطا مواجه شد.", "error");
+    } finally {
+      setIsDeleting(false);
+    }
+  }
+
   const showLoadMoreReplies = hasChainReply && replies !== null && replies.length < comment.replies_count;
-  const isBlurred = comment.is_spoiler && !isSpoilerRevealed;
+  const isBlurred = comment.is_spoiler && !isSpoilerRevealed && !isDeleted;
 
   return (
     <li
@@ -154,7 +202,7 @@ export function CommentItem({ manhwaSlug, comment: initialComment, replyChain, h
             مشترک
           </span>
         )}
-        {comment.is_spoiler && (
+        {comment.is_spoiler && !isDeleted && (
           <span className="rounded-full bg-warning/15 px-2 py-0.5 text-[11px] font-semibold text-warning">
             اسپویل
           </span>
@@ -162,13 +210,49 @@ export function CommentItem({ manhwaSlug, comment: initialComment, replyChain, h
       </div>
 
       <div className="relative mt-4">
-        <p
-          dir="auto"
-          className={`text-sm text-text-primary transition-all duration-300 ${isBlurred ? "select-none blur-sm" : ""
-            }`}
-        >
-          {comment.text}
-        </p>
+        {isDeleted ? (
+          <p dir="auto" className="text-sm italic text-text-secondary">
+            این نظر توسط نویسنده حذف شد.
+          </p>
+        ) : isEditing ? (
+          <div className="flex flex-col gap-2">
+            <textarea
+              value={editText}
+              onChange={(e) => setEditText(e.target.value)}
+              rows={3}
+              dir="auto"
+              className="w-full resize-none rounded-card border border-divider bg-bg px-3 py-2 text-sm text-text-primary outline-none focus:border-accent"
+            />
+            <div className="flex items-center justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => {
+                  setIsEditing(false);
+                  setEditText(comment.text);
+                }}
+                className="rounded-card border border-divider px-3 py-1.5 text-xs font-medium text-text-secondary transition-colors hover:border-accent hover:text-accent"
+              >
+                انصراف
+              </button>
+              <button
+                type="button"
+                onClick={handleSaveEdit}
+                disabled={!editText.trim() || isSavingEdit}
+                className="rounded-card bg-accent px-4 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-accent-dark disabled:opacity-50"
+              >
+                {isSavingEdit ? "در حال ذخیره..." : "ذخیره"}
+              </button>
+            </div>
+          </div>
+        ) : (
+          <p
+            dir="auto"
+            className={`text-sm text-text-primary transition-all duration-300 ${isBlurred ? "select-none blur-sm" : ""
+              }`}
+          >
+            {comment.text}
+          </p>
+        )}
         {isBlurred && (
           <button
             type="button"
@@ -182,36 +266,63 @@ export function CommentItem({ manhwaSlug, comment: initialComment, replyChain, h
       </div>
 
       <div className="mt-8 flex flex-wrap items-center gap-4 text-xs text-text-secondary">
-        <button
-          type="button"
-          disabled={!isLoggedIn || isReacting}
-          onClick={() => handleReaction("lk")}
-          className={`flex items-center gap-1 transition-colors hover:text-accent disabled:cursor-not-allowed disabled:hover:text-text-secondary ${comment.user_reaction === "lk" ? "font-semibold text-accent" : ""
-            }`}
-        >
-          <ThumbsUpIcon className={comment.user_reaction === "lk" ? "fill-accent/20" : ""} />
-          {comment.likes_count.toLocaleString("fa-IR")}
-        </button>
-        <button
-          type="button"
-          disabled={!isLoggedIn || isReacting}
-          onClick={() => handleReaction("dlk")}
-          className={`flex items-center gap-1 transition-colors hover:text-error disabled:cursor-not-allowed disabled:hover:text-text-secondary ${comment.user_reaction === "dlk" ? "font-semibold text-error" : ""
-            }`}
-        >
-          <ThumbsDownIcon className={comment.user_reaction === "dlk" ? "fill-error/20" : ""} />
-          {comment.dis_likes_count.toLocaleString("fa-IR")}
-        </button>
+        {!isDeleted && !isEditing && (
+          <>
+            <button
+              type="button"
+              disabled={!isLoggedIn || isReacting}
+              onClick={() => handleReaction("lk")}
+              className={`flex items-center gap-1 transition-colors hover:text-accent disabled:cursor-not-allowed disabled:hover:text-text-secondary ${comment.user_reaction === "lk" ? "font-semibold text-accent" : ""
+                }`}
+            >
+              <ThumbsUpIcon className={comment.user_reaction === "lk" ? "fill-accent/20" : ""} />
+              {comment.likes_count.toLocaleString("fa-IR")}
+            </button>
+            <button
+              type="button"
+              disabled={!isLoggedIn || isReacting}
+              onClick={() => handleReaction("dlk")}
+              className={`flex items-center gap-1 transition-colors hover:text-error disabled:cursor-not-allowed disabled:hover:text-text-secondary ${comment.user_reaction === "dlk" ? "font-semibold text-error" : ""
+                }`}
+            >
+              <ThumbsDownIcon className={comment.user_reaction === "dlk" ? "fill-error/20" : ""} />
+              {comment.dis_likes_count.toLocaleString("fa-IR")}
+            </button>
 
-        {isLoggedIn && comment.level < MAX_REPLY_LEVEL && (
-          <button
-            type="button"
-            onClick={() => setIsReplying((v) => !v)}
-            className="flex items-center gap-1 hover:text-accent"
-          >
-            <ReplyIcon />
-            پاسخ
-          </button>
+            {isLoggedIn && comment.level < MAX_REPLY_LEVEL && (
+              <button
+                type="button"
+                onClick={() => setIsReplying((v) => !v)}
+                className="flex items-center gap-1 hover:text-accent"
+              >
+                <ReplyIcon />
+                پاسخ
+              </button>
+            )}
+
+            {isOwner && (
+              <>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsEditing(true);
+                    setEditText(comment.text);
+                  }}
+                  className="hover:text-accent"
+                >
+                  ویرایش
+                </button>
+                <button
+                  type="button"
+                  onClick={handleDelete}
+                  disabled={isDeleting}
+                  className="hover:text-error disabled:opacity-50"
+                >
+                  {isDeleting ? "در حال حذف..." : "حذف"}
+                </button>
+              </>
+            )}
+          </>
         )}
 
         {comment.replies_count > 0 && (
@@ -221,7 +332,7 @@ export function CommentItem({ manhwaSlug, comment: initialComment, replyChain, h
         )}
       </div>
 
-      {isReplying && (
+      {!isDeleted && isReplying && (
         <div className="mt-3 border-r-2 border-divider pr-3">
           <CommentForm
             placeholder="پاسخ خود را بنویسید..."
@@ -245,6 +356,7 @@ export function CommentItem({ manhwaSlug, comment: initialComment, replyChain, h
                   manhwaSlug={manhwaSlug}
                   comment={reply}
                   highlightId={highlightId}
+                  currentUserId={currentUserId}
                   replyChain={
                     hasChainReply && replyChain![0].id === reply.id ? replyChain!.slice(1) : undefined
                   }

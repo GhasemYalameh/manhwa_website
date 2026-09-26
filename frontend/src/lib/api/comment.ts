@@ -1,4 +1,4 @@
-import { apiGet, apiPost } from "./client";
+import { apiGet, apiPost, apiPatch, apiDelete } from "./client";
 import type { PaginatedResponse } from "./manhwa";
 
 export interface CommentAuthor {
@@ -110,4 +110,31 @@ export interface MyCommentApiItem {
 // توجه: بک‌اند فعلاً آرایه‌ی flat برمی‌گردونه، نه پیجینیت‌شده — اگه بعداً پیجینیشن اضافه شد این تابع باید Promise<PaginatedResponse<MyCommentApiItem>> برگردونه
 export function getMyComments(): Promise<MyCommentApiItem[]> {
   return apiGet<MyCommentApiItem[]>(`/api/comments/mine/`, { auth: true });
+}
+
+// زنجیره‌ی کامنت هدف تا ریشه (برای دیپ‌لینک نوتیفیکیشن) — یک درخواست به‌جای حلقه‌ی قبلی
+export function getCommentChain(
+  manhwaSlug: string,
+  commentId: number
+): Promise<CommentApiItem[]> {
+  return apiGet<CommentApiItem[]>(
+    `/api/manhwas/${manhwaSlug}/comments/${commentId}/chain/`,
+    { auth: true }
+  );
+}
+
+export function updateComment(
+  manhwaSlug: string,
+  commentId: number,
+  text: string
+): Promise<{ text: string }> {
+  return apiPatch<{ text: string }>(
+    `/api/manhwas/${manhwaSlug}/comments/${commentId}/`,
+    { text },
+    { auth: true }
+  );
+}
+
+export function deleteComment(manhwaSlug: string, commentId: number): Promise<void> {
+  return apiDelete(`/api/manhwas/${manhwaSlug}/comments/${commentId}/`, { auth: true });
 }

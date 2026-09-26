@@ -47,16 +47,6 @@ export function CommentForm({
         className="w-full resize-none rounded-card border border-divider bg-bg px-3 py-2 text-sm text-text-primary outline-none focus:border-accent"
       />
       <div className="flex items-center justify-end gap-3">
-        {onCancel && (
-          <button
-            type="button"
-            onClick={onCancel}
-            className="rounded-card px-3 py-1.5 text-xs text-text-secondary hover:text-text-primary"
-          >
-            انصراف
-          </button>
-        )}
-
         <button
           type="button"
           role="switch"
@@ -65,9 +55,8 @@ export function CommentForm({
           className="flex items-center gap-2"
         >
           <span
-            className={`flex h-5 w-9 shrink-0 items-center rounded-full p-0.5 transition-colors ${
-              isSpoiler ? "justify-end bg-accent" : "justify-start bg-divider"
-            }`}
+            className={`flex h-5 w-9 shrink-0 items-center rounded-full p-0.5 transition-colors ${isSpoiler ? "justify-end bg-accent" : "justify-start bg-divider"
+              }`}
           >
             <span className="h-4 w-4 rounded-full bg-white shadow transition-all" />
           </span>
@@ -75,7 +64,15 @@ export function CommentForm({
             حاوی اسپویل
           </span>
         </button>
-
+        {onCancel && (
+          <button
+            type="button"
+            onClick={onCancel}
+            className="rounded-card border border-divider px-3 py-1.5 text-xs font-medium text-text-secondary transition-colors hover:border-accent hover:text-accent"
+          >
+            انصراف
+          </button>
+        )}
         <button
           type="submit"
           disabled={!text.trim() || isSubmitting}

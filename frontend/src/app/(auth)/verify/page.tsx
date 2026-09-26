@@ -42,7 +42,7 @@ function VerifyForm() {
     try {
       const res = await verifyOtp(phone, otp);
       storeTokens(res.access_token, res.refresh_token);
-      router.push(res.is_new_user ? "/completion" : "/dashboard");
+      router.push(res.is_new_user ? "/completion" : "/profile");
     } catch (err) {
       if (err instanceof ApiError) {
         if (err.status === 403) {

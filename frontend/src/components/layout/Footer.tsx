@@ -44,11 +44,6 @@ export function Footer() {
                   تیکت‌های پشتیبانی
                 </Link>
               </li>
-              <li>
-                <Link href="/favorites" className="text-sm text-text-secondary transition-colors hover:text-accent">
-                  علاقه‌مندی‌ها
-                </Link>
-              </li>
             </ul>
           </div>
         </div>
