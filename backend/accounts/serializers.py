@@ -35,7 +35,7 @@ class GetMeSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = CustomUser
-        fields = ("phone_number", "first_name", "last_name", "is_admin", "is_subscriber", "avatar",)
+        fields = ("id", "phone_number", "first_name", "last_name", "is_admin", "is_subscriber", "avatar",)
 
     def get_is_subscriber(self, obj):
         # return True

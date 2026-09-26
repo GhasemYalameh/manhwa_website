@@ -1,3 +1,5 @@
+from calendar import c
+
 from django.db import connection
 from django.db.models import Avg, F, Value, Subquery, OuterRef, Prefetch, Count
 from django.db.models.functions import Coalesce
@@ -139,7 +141,7 @@ class CommentViewSet(ModelViewSet):
 
     def get_throttles(self):
         match self.action:
-            case ('list'|'retrieve'|'replies'):
+            case ('list'|'retrieve'|'replies'|'chain'):
                self.throttle_scope = 'hundred_in_minute' 
 
             case 'create':
@@ -165,27 +167,40 @@ class CommentViewSet(ModelViewSet):
             
     def get_queryset(self):
         pk = self.kwargs.get('pk')
+        is_authenticated = self.request.user.is_authenticated
         base_qs = Comment.objects.filter(manhwa=self.manhwa)
         optimized_qs = base_qs.prefetch_related(
             Prefetch('children',queryset=Comment.objects.select_related('author'))
-        ).select_related('author')
+        ).select_related('author')            
+        reaction_sq = (
+            CommentReAction.objects.filter(user_id=self.request.user.id,comment_id=OuterRef('pk'))
+            .values('reaction')
+        )
 
         match self.action:
-            case 'create':
-                return base_qs
             case 'partial_update' | 'destroy':
                 return base_qs.filter(author_id=self.request.user.id)
-            case ('list'|'retrieve') :
-                query = optimized_qs.filter(level=0)
-                reaction_sq = (
-                    CommentReAction.objects.filter(user_id=self.request.user.id,comment_id=OuterRef('pk'))
-                    .values('reaction')
+
+            case ('retrieve'|'chain'):
+                if self.action == 'chain':
+                    base_qs = base_qs.select_related('parent__parent')
+
+                if not is_authenticated:
+                    return base_qs
+                return base_qs.annotate(
+                    user_reaction=Coalesce(Subquery(reaction_sq), Value('no-reaction')),
                 )
-                return query if not self.request.user.is_authenticated else query.annotate(
+            
+            case ('list') :
+                query = optimized_qs.filter(level=0)
+                if not is_authenticated:
+                    return query
+
+                return query.annotate(
                     user_reaction=Coalesce(Subquery(reaction_sq), Value('no-reaction')),
                 )
 
-        return base_qs.filter(pk=pk)  # create, detail
+        return base_qs
 
     def get_serializer_class(self):
         match self.action:
@@ -219,6 +234,23 @@ class CommentViewSet(ModelViewSet):
         comment_data = {'likes_count': comment.likes_count, 'dis_likes_count': comment.dis_likes_count}
 
         return Response({'action': serializer.action, 'comment': comment_data, 'reaction': serializer.data}, status=status.HTTP_200_OK)
+
+    @action(detail=True, methods=['get'])
+    def chain(self, request, pk, *args, **kwargs):
+        """
+        returns chain of comments from child to parents
+        """
+        comments_chain = []
+        comment = self.get_object()
+        print(str(comment))
+        comments_chain.append(comment) 
+        if comment.level == 1:
+            comments_chain += [comment.parent]
+        elif comment.level == 2:
+                comments_chain += [comment.parent, comment.parent.parent]
+
+        serializer = self.get_serializer(comments_chain, many=True)
+        return Response(serializer.data)
 
 
 class MyComment(APIView):
