@@ -44,13 +44,13 @@ export function GenreTabsSection({ genres }: GenreTabsSectionProps) {
         <h2 className="text-lg font-bold text-text-primary">ژانرها</h2>
       </div>
 
-      <div className="flex flex-wrap gap-2">
+      <div className="-mx-4 flex gap-2 overflow-x-auto px-4 scrollbar-hide lg:mx-0 lg:flex-wrap lg:overflow-visible lg:px-0">
         {genres.map((genre) => (
           <button
             key={genre.id}
             type="button"
             onClick={() => setActiveGenreId(genre.id)}
-            className={`rounded-full border px-4 py-2 text-sm transition-colors ${activeGenreId === genre.id
+            className={`shrink-0 whitespace-nowrap rounded-md border px-3 py-1.5 text-xs transition-colors lg:rounded-full lg:px-4 lg:py-2 lg:text-sm ${activeGenreId === genre.id
               ? "border-accent bg-accent text-white"
               : "border-divider bg-surface text-text-secondary hover:border-accent hover:text-accent"
               }`}
@@ -61,13 +61,13 @@ export function GenreTabsSection({ genres }: GenreTabsSectionProps) {
       </div>
 
       <div className={`mt-5 transition-opacity duration-200 ${isLoading ? "opacity-50" : "opacity-100"}`}>
-        <MangaCardCarousel>
-          {!isLoading && items.length === 0 ? (
-            <p className="col-span-full py-8 text-center text-sm text-text-secondary">
-              موردی برای این ژانر پیدا نشد.
-            </p>
-          ) : (
-            items.map((item) => (
+        {!isLoading && items.length === 0 ? (
+          <p className="py-8 text-center text-sm text-text-secondary">
+            موردی برای این ژانر پیدا نشد.
+          </p>
+        ) : (
+          <MangaCardCarousel>
+            {items.map((item) => (
               <MangaCard
                 key={item.slug}
                 slug={item.slug}
@@ -80,9 +80,9 @@ export function GenreTabsSection({ genres }: GenreTabsSectionProps) {
                 isHot={item.is_hot}
                 publicationStatus={item.publication_status}
               />
-            ))
-          )}
-        </MangaCardCarousel>
+            ))}
+          </MangaCardCarousel>
+        )}
       </div>
     </section>
   );

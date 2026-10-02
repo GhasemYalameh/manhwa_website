@@ -57,9 +57,9 @@ export function WeeklyCalendar() {
             key={day.value}
             type="button"
             onClick={() => setActiveDay(day.value)}
-            className={`rounded-full border px-4 py-2 text-sm transition-colors ${activeDay === day.value
-                ? "border-accent bg-accent text-white"
-                : "border-divider bg-surface text-text-secondary hover:border-accent hover:text-accent"
+            className={`rounded-md border px-3 py-1.5 text-xs transition-colors lg:rounded-full lg:px-4 lg:py-2 lg:text-sm ${activeDay === day.value
+              ? "border-accent bg-accent text-white"
+              : "border-divider bg-surface text-text-secondary hover:border-accent hover:text-accent"
               }`}
           >
             {day.label}

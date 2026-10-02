@@ -11,6 +11,7 @@ import { getUnreadNotificationsCount } from "@/lib/api/notifications";
 import { SearchDropdown } from "@/components/layout/SearchDropdown";
 import { NotificationDropdown } from "@/components/layout/NotificationDropdown";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import Image from "next/image";
 import {
   ChevronDownIcon,
   MenuIcon,
@@ -110,8 +111,15 @@ export function Header() {
   return (
     <header className="sticky top-0 z-40 border-b border-divider bg-surface">
       <div className="mx-auto flex h-14 max-w-[1400px] items-center justify-between gap-4 px-4 lg:h-20 lg:px-8">
-        <Link href="/" className="flex shrink-0 items-center gap-2">
-          <span className="text-xl font-bold text-accent lg:text-2xl">نارنج‌تون</span>
+        <Link href="/" className="flex shrink-0 items-center">
+          <Image
+            src="/naranjtoon-header.png"
+            alt="نارنج‌تون"
+            width={172}
+            height={69}
+            priority
+            className="h-8 w-auto lg:h-12"
+          />
         </Link>
 
         <nav className="hidden items-center gap-6 lg:flex">

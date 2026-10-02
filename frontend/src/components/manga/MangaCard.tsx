@@ -32,16 +32,18 @@ export function MangaCard({
   publicationStatus,
 }: MangaCardProps) {
   return (
-    <Link href={`/manhwa/${slug}`} className="group block rounded-card bg-surface">
-      <div className="relative aspect-[3/4] w-full overflow-hidden rounded-t-card p-1 pb-0">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={coverUrl}
-          alt={title}
-          draggable={false}
-          className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-        />
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-16 rounded-t-card bg-gradient-to-b from-black/80 to-transparent" />
+    <Link href={`/manhwa/${slug}`} className="group block rounded-card border border-divider bg-surface">
+      <div className="relative aspect-[3/4] w-full p-1 pb-0">
+        <div className="h-full w-full overflow-hidden rounded-t-lg">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={coverUrl}
+            alt={title}
+            draggable={false}
+            className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+          />
+        </div>
+        <div className="pointer-events-none absolute inset-x-1 top-1 h-16 rounded-t-lg bg-gradient-to-b from-black/80 to-transparent" />
 
         {isHot && (
           <span className="absolute left-2 top-2">
@@ -51,22 +53,22 @@ export function MangaCard({
 
         {publicationStatus && (
           <span
-            className={`absolute right-2 top-2 rounded-full px-2 py-0.5 text-[10px] font-bold text-white sm:px-2.5 sm:py-1 sm:text-[11px] ${STATUS_COLOR[publicationStatus]}`}
+            className={`absolute right-2 top-2 rounded-full px-2 py-0.5 text-xs font-bold text-neutral-900 sm:px-2.5 sm:py-1 ${STATUS_COLOR[publicationStatus]}`}
           >
             {STATUS_LABEL[publicationStatus]}
           </span>
         )}
 
         {typeof chaptersCount === "number" && chaptersCount > 0 && (
-          <span className="absolute bottom-2 right-2 rounded-lg bg-black/65 px-2 py-0.5 text-[11px] font-semibold text-white">
+          <span className="absolute bottom-2 right-2 rounded-lg bg-blue-300 px-2.5 py-1 text-xs font-semibold text-neutral-900 shadow-sm ring-1 ring-black/10 sm:text-sm">
             {chaptersCount.toLocaleString("fa-IR")} قسمت
           </span>
         )}
 
         {typeof rating === "number" && (
-          <span className="absolute bottom-2 left-2 flex items-center gap-1 rounded-lg bg-black/65 px-2 py-0.5 text-[11px] font-semibold text-white">
-            {rating.toFixed(1)}
-            <StarIcon className="h-3 w-3 text-warning" />
+          <span className="absolute bottom-2 left-2 flex items-center gap-1 rounded-lg bg-gray-950 text-white px-2.5 py-1 text-xs font-semibold text-neutral-900 shadow-sm ring-1 ring-black/10 sm:text-sm">
+            {rating.toLocaleString("fa-IR", { minimumFractionDigits: 1, maximumFractionDigits: 1 })}
+            <StarIcon className="h-3 w-3 text-warning sm:h-3.5 sm:w-3.5" />
           </span>
         )}
       </div>

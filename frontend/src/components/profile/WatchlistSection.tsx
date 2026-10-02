@@ -72,11 +72,10 @@ export function WatchlistSection() {
             key={tab}
             type="button"
             onClick={() => setActiveTab(tab)}
-            className={`rounded-full border px-4 py-2 text-sm transition-colors ${
-              activeTab === tab
+            className={`rounded-md border px-3 py-1.5 text-xs transition-colors lg:rounded-full lg:px-4 lg:py-2 lg:text-sm ${activeTab === tab
                 ? "border-accent bg-accent text-white"
                 : "border-divider bg-surface text-text-secondary hover:border-accent hover:text-accent"
-            }`}
+              }`}
           >
             {STATUS_LABELS[tab]}
           </button>
