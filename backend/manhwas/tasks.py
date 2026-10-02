@@ -25,7 +25,7 @@ def sync_pending_views():
 
     logger.info('Starting syncing cached views...')
 
-    pattern = 'manhwa:*:viewers_id'
+    pattern = MANHWA_REDIS_KEYS.get('ALL_MANHWA_VIEWERS_ID_PATTERN')
     cursor, manhwa_ids = 0, []
     update_count, total_viewers = 0, 0
     while 1:
@@ -45,7 +45,7 @@ def sync_pending_views():
         pipe.delete(viewers_key)
         results = pipe.execute()
 
-        manhwa_viewers_id = [int(mvid) for mvid in results[0]]  # mvid (manhwa viewer id)
+        manhwa_viewers_id = results[0]
         manhwa_viewers_count = results[1]
 
         # if key is empty, continue
@@ -82,7 +82,7 @@ def sync_view_objects_count_to_manhwa():
     viewed_manhwas_key = MANHWA_REDIS_KEYS.get('VIEWED_MANHWAS_ID')
     viewers_sq = (
         View.objects.filter(manhwa_id=OuterRef('pk')).order_by().values('manhwa')
-        .annotate(cnt=Count('id')).values('cnd')
+        .annotate(cnt=Count('id')).values('cnt')
     )
     pipe = redis_con.pipeline()
     pipe.smembers(viewed_manhwas_key)

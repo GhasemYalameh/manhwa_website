@@ -23,4 +23,5 @@ MANHWA_REDIS_KEYS = {
     "MANHWA_VIEWERS_ID": "manhwa:{}:viewers_id", 
     "MANHWA_RATING_DATA": 'manhwa:{}:rating_data',
     "VIEWED_MANHWAS_ID": "viewed:manhwas_id",
+    "ALL_MANHWA_VIEWERS_ID_PATTERN": "manhwa:*:viewers_id",
 }
