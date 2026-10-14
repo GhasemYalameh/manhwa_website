@@ -24,7 +24,7 @@ STOP_WORDS = {
 class ManhwaService:
     def __init__(self):
         self.redis = get_redis_connection('default')
-        self.manhwa_viewers_key = MANHWA_REDIS_KEYS.get('MANHWA_VIEWERS_ID')
+        self.manhwa_viewers_id_key = MANHWA_REDIS_KEYS.get('MANHWA_VIEWERS_ID')
         self.manhwa_rating_data_key = MANHWA_REDIS_KEYS.get('MANHWA_RATING_DATA')
 
 
@@ -56,13 +56,13 @@ class ManhwaService:
         adding user_id to cache. check user_id exists in cache.
         returns true if user exists in cache, false otherwise.
         """
-        manhwa_viewers_key = self.manhwa_viewers_key.format(manhwa_id)
+        manhwa_viewers_key = self.manhwa_viewers_id_key.format(manhwa_id)
         added = self.redis.sadd(manhwa_viewers_key, str(user_id)) # returns true if user_id added to set.
         return added
 
 
     def is_exist_view(self, manhwa_id, user_id)-> bool:
-        manhwa_viewers_key = self.manhwa_viewers_key.format(manhwa_id)
+        manhwa_viewers_key = self.manhwa_viewers_id_key.format(manhwa_id)
         is_member = self.redis.sismember(manhwa_viewers_key, str(user_id))
         return is_member
 

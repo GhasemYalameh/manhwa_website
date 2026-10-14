@@ -15,6 +15,8 @@ logger = logging.getLogger(__name__)
 redis_con = get_redis_connection('default')
 
 IMAGE_ALLOWED_FORMATS = {'.jpg', '.jpeg', '.png', '.webp'}
+ALL_MANHWAS_KEY = MANHWA_REDIS_KEYS.get('ALL_MANHWA_VIEWERS_ID_PATTERN')
+VIEWED_MANHWAS_KEY = MANHWA_REDIS_KEYS.get('VIEWED_MANHWAS_ID')
 
 
 @shared_task(name='manhwas.sync_pending_views')
@@ -25,23 +27,22 @@ def sync_pending_views():
 
     logger.info('Starting syncing cached views...')
 
-    pattern = MANHWA_REDIS_KEYS.get('ALL_MANHWA_VIEWERS_ID_PATTERN')
-    cursor, manhwa_ids = 0, []
+    pattern = ALL_MANHWAS_KEY
+    cursor, manhwas_id = 0, []
     update_count, total_viewers = 0, 0
     while 1:
         cursor, keys = redis_con.scan(cursor, match=pattern, count=100)
-        manhwa_ids.extend([key.decode('utf-8').split(':')[1] for key in keys])
+        manhwas_id.extend([key.decode('utf-8').split(':')[1] for key in keys])
         if cursor == 0:
             break
-
-    for manhwa_id in manhwa_ids:
+    
+    for manhwa_id in manhwas_id:
         viewers_key = MANHWA_REDIS_KEYS.get('MANHWA_VIEWERS_ID').format(manhwa_id)
-        viewed_manhwas_key = MANHWA_REDIS_KEYS.get('VIEWED_MANHWAS_ID')
+
         # atomic process
         pipe = redis_con.pipeline()
         pipe.smembers(viewers_key)
         pipe.scard(viewers_key)
-        pipe.sunionstore(viewed_manhwas_key, viewed_manhwas_key, viewers_key)
         pipe.delete(viewers_key)
         results = pipe.execute()
 
@@ -54,26 +55,21 @@ def sync_pending_views():
 
         try:
             Manhwa.objects.filter(pk=manhwa_id).update(views_count=F('views_count') + manhwa_viewers_count)
-
             # crete view objects
-            view_objects = [View(manhwa_id=manhwa_id, user_id=uid) for uid in manhwa_viewers_id]
+            view_objects = [View(manhwa_id=manhwa_id, user_id=uid.decode('utf-8')) for uid in manhwa_viewers_id]
             View.objects.bulk_create(view_objects, ignore_conflicts=True)
 
             update_count += 1
             total_viewers += manhwa_viewers_count
-
             logger.info(f'Increase +{total_viewers} views to manhwa id ({manhwa_id})')
 
         except Exception as e:
             logger.error(f'got error while syncing pending views for {manhwa_id}: {str(e)}')
-
+            
+    redis_con.sadd(VIEWED_MANHWAS_KEY, *manhwas_id)
     logger.info(f'finished syncing cached views. {update_count} manhwas updated.')
     logger.info(f'total cached views: {total_viewers}')
-
-    return {
-        'total_views': total_viewers,
-        'updated_manhwas': update_count,
-    }
+    return {'total_views': total_viewers,'updated_manhwas': update_count}
 
 @shared_task(name='manhwas.sync_view_objects_count_to_manhwa')
 def sync_view_objects_count_to_manhwa():
